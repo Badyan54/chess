@@ -1,0 +1,5 @@
+.vscode/
+chess
+include/
+lib/
+output/
