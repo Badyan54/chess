@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "pieces.hpp"
 #include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -34,28 +35,41 @@ void Board::writeCurrentBoard() {
         cout << std::endl;
     }
 }
-void Board::startGame(){
+void Board::startGame(std::vector<std::unique_ptr<Piece>>& pieces){
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
             switch(position[i][j]){
                 case 'p':
                 case 'P':
-                    Pawn pawn(j, i, position[i][j]);
-                    // cout << "           " << pawn.coordH << pawn.coordV;
-                    // pawn.move(1, 1, position[1][1] != ' ');
-                    // cout << "           " << pawn.coordH << pawn.coordV;
-                    // writeCurrentBoard();
+                    
+                    pieces.push_back(std::make_unique<Pawn>(j, i, position[j][i]));
                     break;
-                // case 'R':
-                //     break;
-                // case 'k':
-                //     break;
-                // case 'B':
-                //     break;
-                // case 'Q':
-                //     break;
-                // case 'K':
-                //     break;
+
+                case 'r':
+                case 'R':
+                    pieces.push_back(std::make_unique<Rock>(j, i, position[j][i]));
+                    break;
+
+                case 'h':
+                case 'H':
+                    pieces.push_back(std::make_unique<Knight>(j, i, position[j][i]));
+                    break;
+
+                case 'b':
+                case 'B':
+                    pieces.push_back(std::make_unique<Bishop>(j, i, position[j][i]));
+                    break;
+
+                case 'q':
+                case 'Q':
+
+                    pieces.push_back(std::make_unique<Queen>(j, i, position[j][i]));
+                    break;
+
+                case 'k':
+                case 'K':
+                    pieces.push_back(std::make_unique<King>(j, i, position[j][i]));
+                    break;
             }
         }
     }
