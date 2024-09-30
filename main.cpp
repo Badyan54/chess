@@ -6,9 +6,16 @@ using namespace std;
 
 int main(){
     Board board;
-    std::vector<std::unique_ptr<Piece>> pieces;
+    std::vector<std::unique_ptr<Piece>> piecesWhite;
+    std::vector<std::unique_ptr<Piece>> piecesBlack;
     board.writeCurrentBoard();
-    board.startGame(pieces);
+    board.startGame(piecesWhite, piecesBlack);
+    
+
+
+    // while(true){
+        
+    // }
 
     return 0;
 }

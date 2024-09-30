@@ -17,8 +17,12 @@ public:
     int coordV;
 
     Piece(const int H, const int V, const char n);
+    bool hereMyFigure(int H, int V, char (&position)[8][8]);
     bool move(const int H, const int V, char (&position)[8][8], const int move);
 
+    int get_coordH();
+    int get_coordV();
+    virtual bool ishaveMove(char (&position)[8][8]) = 0;
     virtual bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) = 0;
     
 };
@@ -32,6 +36,7 @@ public:
 
     static void setEnPasant(int H, int V, int move);
     static bool isEnPasant(int H, int V, int move);
+    virtual bool ishaveMove(char (&position)[8][8]) override;
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
     void promote(const char name);
 
@@ -44,6 +49,7 @@ class Rock : public Piece{
 public:
     bool isFirstMove;
     Rock(const int H, const int V, const char name);
+    bool ishaveMove(char (&position)[8][8]) override;
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
 
 };
@@ -51,6 +57,7 @@ public:
 class Bishop : public Piece{
 public:
     Bishop(const int H, const int V, const char name);
+    bool ishaveMove(char (&position)[8][8]) override;
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
 };
 
@@ -59,18 +66,22 @@ private:
 Bishop bishop;
 Rock rock; 
 public:
+    bool ishaveMove(char (&position)[8][8]) override;
     Queen(const int H, const int V, const char name);
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
 };
 
 class King : public Piece{
 public:
+    bool ishaveMove(char (&position)[8][8]) override;
     King(const int H, const int V, const char name);
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
+
 };
 
 class Knight : public Piece{
 public:
+    bool ishaveMove(char (&position)[8][8]) override;
     Knight(const int H, const int V, const char name);
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
 };
