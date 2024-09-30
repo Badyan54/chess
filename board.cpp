@@ -11,20 +11,22 @@ using namespace std;
 
 Board::Board(){
     copy(&defaultPosition[0][0], &defaultPosition[0][0] + 8 * 8, &position[0][0]);
+    numverOfMove = 0;
 }
 Board::Board(const char myPosition[8][8]) {
     copy(&myPosition[0][0], &myPosition[0][0] + 8 * 8, &position[0][0]);
+    numverOfMove= 0;
 }
 
 const char Board::defaultPosition[8][8] = {
-    {'R', 'k', 'B', 'Q', 'K', 'B', 'k', 'R'},
+    {'r', 'h', ' ', 'q', 'k', 'b', 'h', 'r'},
     {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-    {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
-    {'R', 'k', 'B', 'Q', 'K', 'B', 'k', 'R'}
+    {' ', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
+    {'R', 'H', 'B', 'Q', 'K', 'B', 'H', 'R'}
 };
 
 void Board::writeCurrentBoard() {
@@ -42,58 +44,76 @@ void Board::startGame(std::vector<std::unique_ptr<Piece>>& piecesWhite,
 
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
-            switch(position[i][j]){
-                case 'p':
-                    piecesBlack.push_back(std::make_unique<Pawn>(j, i, position[j][i]));
+            
+            switch(position[j][i]){
+                case 'P': 
+                    piecesBlack.push_back(std::make_unique<Pawn>(i, j, 'P'));
                     break;
-                case 'P':            
-                    piecesWhite.push_back(std::make_unique<Pawn>(j, i, position[j][i]));
+
+                case 'p':  
+                    piecesWhite.push_back(std::make_unique<Pawn>(i, j, 'p'));
+                    break;
+
+                case 'R':
+                    piecesBlack.push_back(std::make_unique<Rock>(i, j, 'R'));
                     break;
 
                 case 'r':
-                    piecesBlack.push_back(std::make_unique<Rock>(j, i, position[j][i]));
+                
+                    piecesWhite.push_back(std::make_unique<Rock>(i, j, 'r'));
                     break;
-                case 'R':
-                    piecesWhite.push_back(std::make_unique<Rock>(j, i, position[j][i]));
+
+                case 'H':
+                    piecesBlack.push_back(std::make_unique<Knight>(i, j, 'H'));
                     break;
 
                 case 'h':
-                    piecesBlack.push_back(std::make_unique<Knight>(j, i, position[j][i]));
-                    break;
-                case 'H':
-                    piecesWhite.push_back(std::make_unique<Knight>(j, i, position[j][i]));
+                    piecesWhite.push_back(std::make_unique<Knight>(i, j, 'h'));
                     break;
 
-                case 'b':
-                    piecesBlack.push_back(std::make_unique<Bishop>(j, i, position[j][i]));
-                    break;
                 case 'B':
-                    piecesWhite.push_back(std::make_unique<Bishop>(j, i, position[j][i]));
+                    piecesBlack.push_back(std::make_unique<Bishop>(i, j, 'B'));
+                    break;
+                    
+                case 'b':
+                    piecesWhite.push_back(std::make_unique<Bishop>(i, j, 'b'));
                     break;
 
-                case 'q':
-                    piecesBlack.push_back(std::make_unique<Queen>(j, i, position[j][i]));
-                    break;
                 case 'Q':
-                    piecesWhite.push_back(std::make_unique<Queen>(j, i, position[j][i]));
+                    piecesBlack.push_back(std::make_unique<Queen>(i, j, 'Q'));
+                    break;
+                
+                case 'q':
+                    piecesWhite.push_back(std::make_unique<Queen>(i, j, 'q'));
+                    break;
+
+                case 'K':
+                    piecesBlack.push_back(std::make_unique<King>(i, j, 'K'));
                     break;
 
                 case 'k':
-                    piecesBlack.push_back(std::make_unique<King>(j, i, position[j][i]));
-                    break;
-                case 'K':
-                    piecesWhite.push_back(std::make_unique<King>(j, i, position[j][i]));
+                    piecesWhite.push_back(std::make_unique<King>(i, j, 'k'));
                     break;
             }
         }
     }
+    // for (auto it = piecesWhite.begin(); it != piecesWhite.end(); ++it) {
+    //     cout << (*it)->name << endl;
+    // }
 }
 
 bool Board::isCheck(int H, int V, std::vector<std::unique_ptr<Piece>>& pieces, char (&testPosition)[8][8]){
     
     for (auto it = pieces.begin(); it != pieces.end(); ++it) {
         if((*it)->isPosible(H, V, testPosition, 2)){
+            int h = (*it)->coordH;
+            int v = (*it)->coordV;
+            cout << (*it)->name << endl;
+            cout << h << endl;
+            cout << v << endl;
+
             return true;
+
         }
     }
     return false;
@@ -138,12 +158,12 @@ bool Board::isCheckMate(std::vector<std::unique_ptr<Piece>>& pieces1,
             int V = KingV + dV;
             while (H != attackerH || V != attackerV) {
                 if (isCheck(H, V, pieces2, position)){
-                    char befor = testPosition[H][V];
-                    testPosition[H][V] = 'R';
+                    char befor = testPosition[V][H];
+                    testPosition[V][H] = 'R';
                     if (!(isCheck(KingH, KingV, pieces1, testPosition))){
                         return false;
                     }
-                    testPosition[H][V] = befor;
+                    testPosition[V][H] = befor;
                 }
                 H += dH;
                 V += dV;
@@ -180,3 +200,36 @@ bool Board::draw(std::vector<std::unique_ptr<Piece>>& pieces, King &King){
     }
     return true;
 }
+
+void Board::endGame(Color col, std::vector<std::unique_ptr<Piece>> piecesWhite,
+    std::vector<std::unique_ptr<Piece>> piecesBlack){
+
+
+    }
+
+bool Board::move(int currentCoordH, int currentcoordV, int newcoordH, int newCoordV, King King,
+                    std::vector<std::unique_ptr<Piece>>& pieces1,
+                    std::vector<std::unique_ptr<Piece>>& pieces2){
+
+    char testPosition[8][8];
+    copy(&position[0][0], &position[0][0] + 8 * 8, &testPosition[0][0]);
+    testPosition[currentcoordV][currentCoordH] = ' ';
+    testPosition[newCoordV][newcoordH] = 'R';
+    if (isCheck(King.get_coordH(), King.get_coordV(), pieces1, testPosition))
+        
+       { cout << 'e' << endl; return false;}
+    cout << position[currentcoordV][currentCoordH] << endl;
+    for (auto & piece : pieces2){
+
+        if (piece->get_coordH() == currentCoordH && piece->get_coordV() == currentcoordV){
+            cout << piece->name << endl;
+            cout << piece->coordH << endl;
+            cout << piece->coordV << endl;
+
+            return piece->pmove(newcoordH, newCoordV, position, numverOfMove);
+        }
+    }
+    return false;
+    
+}
+

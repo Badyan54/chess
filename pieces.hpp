@@ -7,6 +7,7 @@ struct EnPassantMe{
     int coordH;
     int coordV;
     int move;
+    
 };
 
 class Piece{
@@ -15,10 +16,11 @@ public:
     Color col;
     int coordH;
     int coordV;
+    bool isPin;
 
     Piece(const int H, const int V, const char n);
     bool hereMyFigure(int H, int V, char (&position)[8][8]);
-    bool move(const int H, const int V, char (&position)[8][8], const int move);
+    bool pmove(const int H, const int V, char (&position)[8][8], const int move);
 
     int get_coordH();
     int get_coordV();
