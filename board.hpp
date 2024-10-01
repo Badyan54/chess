@@ -25,8 +25,11 @@ public:
     bool draw(std::vector<std::unique_ptr<Piece>>& pieces, King &king);
 
     bool move(int currentCoordH, int currentcoordV, int newcoordH, int newCoordV, King King,
-                    std::vector<std::unique_ptr<Piece>>& pieces, std::vector<std::unique_ptr<Piece>>& pieces2);
+                    std::vector<std::unique_ptr<Piece>>& pieces, std::vector<std::unique_ptr<Piece>>& pieces2, char newName );
     void writeCurrentBoard();
+    void push_back_piece(char name, int i, int j,
+            std::vector<std::unique_ptr<Piece>>& piecesWhite,
+            std::vector<std::unique_ptr<Piece>>& piecesBlack);
     void endGame(Color col, std::vector<std::unique_ptr<Piece>> piecesWhite,
     std::vector<std::unique_ptr<Piece>> piecesBlack);
     

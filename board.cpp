@@ -39,62 +39,68 @@ void Board::writeCurrentBoard() {
         cout << std::endl;
     }
 }
+
+void Board::push_back_piece(char name, int i, int j,
+            std::vector<std::unique_ptr<Piece>>& piecesWhite,
+            std::vector<std::unique_ptr<Piece>>& piecesBlack){                
+    switch(name){
+        case 'P': 
+            piecesBlack.push_back(std::make_unique<Pawn>(i, j, 'P'));
+            break;
+
+        case 'p':  
+            piecesWhite.push_back(std::make_unique<Pawn>(i, j, 'p'));
+            break;
+
+        case 'R':
+            piecesBlack.push_back(std::make_unique<Rock>(i, j, 'R'));
+            break;
+
+        case 'r':
+        
+            piecesWhite.push_back(std::make_unique<Rock>(i, j, 'r'));
+            break;
+
+        case 'H':
+            piecesBlack.push_back(std::make_unique<Knight>(i, j, 'H'));
+            break;
+
+        case 'h':
+            piecesWhite.push_back(std::make_unique<Knight>(i, j, 'h'));
+            break;
+
+        case 'B':
+            piecesBlack.push_back(std::make_unique<Bishop>(i, j, 'B'));
+            break;
+            
+        case 'b':
+            piecesWhite.push_back(std::make_unique<Bishop>(i, j, 'b'));
+            break;
+
+        case 'Q':
+            piecesBlack.push_back(std::make_unique<Queen>(i, j, 'Q'));
+            break;
+        
+        case 'q':
+            piecesWhite.push_back(std::make_unique<Queen>(i, j, 'q'));
+            break;
+
+        case 'K':
+            piecesBlack.push_back(std::make_unique<King>(i, j, 'K'));
+            break;
+
+        case 'k':
+            piecesWhite.push_back(std::make_unique<King>(i, j, 'k'));
+            break;
+    }
+}
+
 void Board::startGame(std::vector<std::unique_ptr<Piece>>& piecesWhite,
                         std::vector<std::unique_ptr<Piece>>& piecesBlack){
 
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
-            
-            switch(position[j][i]){
-                case 'P': 
-                    piecesBlack.push_back(std::make_unique<Pawn>(i, j, 'P'));
-                    break;
-
-                case 'p':  
-                    piecesWhite.push_back(std::make_unique<Pawn>(i, j, 'p'));
-                    break;
-
-                case 'R':
-                    piecesBlack.push_back(std::make_unique<Rock>(i, j, 'R'));
-                    break;
-
-                case 'r':
-                
-                    piecesWhite.push_back(std::make_unique<Rock>(i, j, 'r'));
-                    break;
-
-                case 'H':
-                    piecesBlack.push_back(std::make_unique<Knight>(i, j, 'H'));
-                    break;
-
-                case 'h':
-                    piecesWhite.push_back(std::make_unique<Knight>(i, j, 'h'));
-                    break;
-
-                case 'B':
-                    piecesBlack.push_back(std::make_unique<Bishop>(i, j, 'B'));
-                    break;
-                    
-                case 'b':
-                    piecesWhite.push_back(std::make_unique<Bishop>(i, j, 'b'));
-                    break;
-
-                case 'Q':
-                    piecesBlack.push_back(std::make_unique<Queen>(i, j, 'Q'));
-                    break;
-                
-                case 'q':
-                    piecesWhite.push_back(std::make_unique<Queen>(i, j, 'q'));
-                    break;
-
-                case 'K':
-                    piecesBlack.push_back(std::make_unique<King>(i, j, 'K'));
-                    break;
-
-                case 'k':
-                    piecesWhite.push_back(std::make_unique<King>(i, j, 'k'));
-                    break;
-            }
+            push_back_piece(position[j][i], i, j, piecesWhite, piecesBlack);
         }
     }
     // for (auto it = piecesWhite.begin(); it != piecesWhite.end(); ++it) {
@@ -209,7 +215,7 @@ void Board::endGame(Color col, std::vector<std::unique_ptr<Piece>> piecesWhite,
 
 bool Board::move(int currentCoordH, int currentcoordV, int newcoordH, int newCoordV, King King,
                     std::vector<std::unique_ptr<Piece>>& pieces1,
-                    std::vector<std::unique_ptr<Piece>>& pieces2){
+                    std::vector<std::unique_ptr<Piece>>& pieces2, char newName ){
 
     char testPosition[8][8];
     copy(&position[0][0], &position[0][0] + 8 * 8, &testPosition[0][0]);
@@ -219,14 +225,24 @@ bool Board::move(int currentCoordH, int currentcoordV, int newcoordH, int newCoo
         
        { cout << 'e' << endl; return false;}
     cout << position[currentcoordV][currentCoordH] << endl;
-    for (auto & piece : pieces2){
+    for (auto piece = pieces1.begin(); piece != pieces1.end(); ++piece){
 
-        if (piece->get_coordH() == currentCoordH && piece->get_coordV() == currentcoordV){
-            cout << piece->name << endl;
-            cout << piece->coordH << endl;
-            cout << piece->coordV << endl;
+        if ((*piece)->get_coordH() == currentCoordH && (*piece)->get_coordV() == currentcoordV){
 
-            return piece->pmove(newcoordH, newCoordV, position, numverOfMove);
+            if ((*piece)->pmove(newcoordH, newCoordV, position, numverOfMove)){
+                // if (((*piece)->name == 'P' || (*piece)->name == 'p') && (newcoordH == 7 || newcoordH == 0)){
+                //     (*piece)->col ? push_back_piece(newName, newcoordH, newCoordV, pieces1, pieces2) : push_back_piece(newName, newcoordH, newCoordV, pieces2, pieces1);
+                //     piece = pieces1.erase(piece);
+
+                //     position[newCoordV][newcoordH] = newName;
+                // }
+                // for (auto piece = pieces2.begin(); piece != pieces2.end(); ++piece){
+                //     if ((*piece)->get_coordH() == newcoordH && (*piece)->get_coordV() == newCoordV){
+                //         pieces1.erase(piece);
+                //     }
+                // }
+                return true;
+            }
         }
     }
     return false;
