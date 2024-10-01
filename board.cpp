@@ -115,14 +115,7 @@ bool Board::isCheck(int H, int V, std::vector<std::unique_ptr<Piece>>& pieces, c
     
     for (auto it = pieces.begin(); it != pieces.end(); ++it) {
         if((*it)->isPosible(H, V, testPosition, 2)){
-            int h = (*it)->coordH;
-            int v = (*it)->coordV;
-            cout << (*it)->name << endl;
-            cout << h << endl;
-            cout << v << endl;
-
             return true;
-
         }
     }
     return false;
@@ -256,6 +249,24 @@ for (auto piece = pieces2.begin(); piece != pieces2.end(); ++piece) {
     }
 }
     return false;
+}
+
+
+void Board::canCastle(King& king, Rock& rook, std::vector<std::unique_ptr<Piece>>& pieces) {
+    if (!(king.isFirstMove && rook.isFirstMove))
+        { king.canCastle = false; return; }
+    if (isCheck(king.get_coordH(), king.get_coordV(), pieces, position))
+        { king.canCastle = false; return; }
+
+    int startCol = (rook.get_coordH()  > king.get_coordH()) ? king.get_coordH() + 1 : rook.get_coordH() + 1;
+    int endCol = (rook.get_coordH() > king.get_coordH()) ? rook.get_coordH() : king.get_coordH();
+
+    for (int i = startCol; i < endCol; ++i) {
+        if (position[king.get_coordV()][i] != ' ' || isCheck( i, king.get_coordV(), pieces, position))  
+            { king.canCastle = false; return; }
+    }
+
+    king.canCastle = true;
 }
 
 

@@ -32,6 +32,7 @@ public:
             std::vector<std::unique_ptr<Piece>>& piecesBlack);
     void endGame(Color col, std::vector<std::unique_ptr<Piece>> piecesWhite,
     std::vector<std::unique_ptr<Piece>> piecesBlack);
+    void canCastle(King& king, Rock& rook, std::vector<std::unique_ptr<Piece>>& pieces);
     
 };
 

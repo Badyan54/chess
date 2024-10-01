@@ -15,7 +15,6 @@ Piece::Piece(const int H, const int V, const char n){
     coordH = H;
     coordV = V;
     name = n;
-    isPin = false;
 }
 
 int Piece::get_coordH(){
@@ -115,6 +114,7 @@ bool Pawn::ishaveMove(char (&position)[8][8]){
 
 Rock::Rock(const int coordH, const int coordV, const char name)
     : Piece(coordH, coordV,  name){
+        isFirstMove = true;
 }
 
 bool Rock::isPosible(const int H, const int V, char (&position)[8][8], const int move){
@@ -127,6 +127,7 @@ bool Rock::isPosible(const int H, const int V, char (&position)[8][8], const int
                 return false; 
             }
         }
+        isFirstMove = false;
         return true; 
     }
     if (coordV == V) {
@@ -137,6 +138,7 @@ bool Rock::isPosible(const int H, const int V, char (&position)[8][8], const int
                 return false; 
             }
         }
+        isFirstMove = false;
         return true; 
     }
     return false;
@@ -256,13 +258,25 @@ bool Knight::ishaveMove(char (&position)[8][8]){
 
 King::King(const int coordH, const int coordV, const char name)
     : Piece(coordH, coordV, name){
+    isFirstMove = true;
+    canCastle = false;
 }
 
 bool King::isPosible(const int H, const int V, char (&position)[8][8], const int move){
     int deltaH = abs(coordH - H);
     int deltaV = abs(coordV - V);
 
+    if (canCastle){
+        if (coordH + 2 == H && coordV == V){
+            position[V][H-1] = col ? 'R' : 'r';
+        }
+        if (coordH - 2 == H && coordV == V){
+
+        }
+
+    }
     return deltaH <= 1 && deltaV <= 1;
+    
 }
 
 bool King::ishaveMove(char (&position)[8][8]){

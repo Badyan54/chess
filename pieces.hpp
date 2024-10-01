@@ -16,7 +16,6 @@ public:
     Color col;
     int coordH;
     int coordV;
-    bool isPin;
 
     Piece(const int H, const int V, const char n);
     bool hereMyFigure(int H, int V, char (&position)[8][8]);
@@ -75,6 +74,8 @@ public:
 
 class King : public Piece{
 public:
+    bool isFirstMove;
+    bool canCastle;
     bool ishaveMove(char (&position)[8][8]) override;
     King(const int H, const int V, const char name);
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
