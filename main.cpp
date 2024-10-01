@@ -21,24 +21,14 @@ int main(){
     // board.writeCurrentBoard();
     board.move(1, 6, 1, 5, king, piecesWhite, piecesBlack, ' ');
     board.writeCurrentBoard();
-    // board.move(1, 5, 1, 4, king, piecesWhite, piecesBlack);
-    // board.writeCurrentBoard();
-    // board.move(1, 4, 1, 3, king, piecesWhite, piecesBlack);
-    // board.writeCurrentBoard();
-    // board.move(2,1, 2, 3, king1, piecesBlack, piecesWhite );
-    // board.writeCurrentBoard();
-    // board.move(3, 0, 2, 0, king1, piecesBlack, piecesWhite );
-    // board.writeCurrentBoard();
-    // board.move(4, 0, 3, 0, king1, piecesBlack, piecesWhite );
-    // board.writeCurrentBoard();
-    // board.move(1, 3, 2, 2, king, piecesWhite, piecesBlack);
-    // board.writeCurrentBoard();
-    // board.move(2, 7, 1, 6, king, piecesWhite, piecesBlack);
-    // board.writeCurrentBoard();
-    // board.move(3, 7, 1, 7, king, piecesWhite, piecesBlack);
-    // board.writeCurrentBoard();
-    // board.move( 1, 7, 1, 6, king, piecesWhite, piecesBlack);
-    // board.writeCurrentBoard();
+    board.move(2, 1, 2, 0, king, piecesWhite, piecesBlack, 'Q');
+    board.writeCurrentBoard();
+    board.move(2, 0, 2, 2, king, piecesWhite, piecesBlack, ' ');
+    board.writeCurrentBoard();
+        board.move(2, 2, 3, 3, king, piecesWhite, piecesBlack, ' ');
+    board.writeCurrentBoard();
+    cout << piecesBlack.back()->name<< piecesBlack.back()->get_coordH() << "  " << piecesBlack.back()->get_coordV() << endl;
+
 
 
 

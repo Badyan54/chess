@@ -20,7 +20,7 @@ Board::Board(const char myPosition[8][8]) {
 
 const char Board::defaultPosition[8][8] = {
     {'r', 'h', ' ', 'q', 'k', 'b', 'h', 'r'},
-    {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
+    {'p', 'p', 'P', 'p', 'p', 'p', 'p', 'p'},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
@@ -79,6 +79,9 @@ void Board::push_back_piece(char name, int i, int j,
 
         case 'Q':
             piecesBlack.push_back(std::make_unique<Queen>(i, j, 'Q'));
+            cout << "fffffffffffffffffffffff" << endl;
+            cout << piecesBlack.back()->get_coordH() << "  " << piecesBlack.back()->get_coordV() <<
+            piecesBlack.back()->name << endl;
             break;
         
         case 'q':
@@ -224,28 +227,36 @@ bool Board::move(int currentCoordH, int currentcoordV, int newcoordH, int newCoo
     if (isCheck(King.get_coordH(), King.get_coordV(), pieces1, testPosition))
         
        { cout << 'e' << endl; return false;}
-    cout << position[currentcoordV][currentCoordH] << endl;
-    for (auto piece = pieces1.begin(); piece != pieces1.end(); ++piece){
 
-        if ((*piece)->get_coordH() == currentCoordH && (*piece)->get_coordV() == currentcoordV){
+for (auto piece = pieces2.begin(); piece != pieces2.end(); ++piece) {
 
-            if ((*piece)->pmove(newcoordH, newCoordV, position, numverOfMove)){
-                // if (((*piece)->name == 'P' || (*piece)->name == 'p') && (newcoordH == 7 || newcoordH == 0)){
-                //     (*piece)->col ? push_back_piece(newName, newcoordH, newCoordV, pieces1, pieces2) : push_back_piece(newName, newcoordH, newCoordV, pieces2, pieces1);
-                //     piece = pieces1.erase(piece);
+    if ((*piece)->get_coordH() == currentCoordH && (*piece)->get_coordV() == currentcoordV) {
 
-                //     position[newCoordV][newcoordH] = newName;
-                // }
-                // for (auto piece = pieces2.begin(); piece != pieces2.end(); ++piece){
-                //     if ((*piece)->get_coordH() == newcoordH && (*piece)->get_coordV() == newCoordV){
-                //         pieces1.erase(piece);
-                //     }
-                // }
-                return true;
+        cout << "eed" << endl;
+        if ((*piece)->pmove(newcoordH, newCoordV, position, numverOfMove)) {
+            if (((*piece)->name == 'P' || (*piece)->name == 'p') && (newCoordV == 7 || newCoordV == 0)) {
+                piece = pieces2.erase(piece);
+                (*piece)->col ? 
+                    push_back_piece(newName, newcoordH, newCoordV, pieces1, pieces2) : 
+                    push_back_piece(newName, newcoordH, newCoordV, pieces2, pieces1);
+                position[newCoordV][newcoordH] = newName;
+                cout << "ff" << endl;
             }
+
+
+            for (auto it = pieces1.begin(); it != pieces1.end(); ) {
+                if ((*it)->get_coordH() == newcoordH && (*it)->get_coordV() == newCoordV) {
+                    it = pieces1.erase(it); 
+                } else {
+                    ++it; 
+                }
+            }
+            return true;
         }
     }
-    return false;
-    
 }
+    return false;
+}
+
+
 

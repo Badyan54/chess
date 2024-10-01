@@ -210,7 +210,14 @@ Queen::Queen(const int coordH, const int coordV, const char name)
 }
 
 bool Queen::isPosible(const int H, const int V, char (&position)[8][8], const int move){
-    return (rock.isPosible(H, V, position, move) || bishop.isPosible(H, V, position, move));
+    if (rock.isPosible(H, V, position, move) || bishop.isPosible(H, V, position, move)){
+        bishop.coordV = V;
+        bishop.coordH = H;
+        rock.coordV = V;
+        rock.coordH = H;
+        return true;
+    }
+    return false;
 }
 
 bool Queen::ishaveMove(char (&position)[8][8]){
