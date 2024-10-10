@@ -1,7 +1,7 @@
 #ifndef PIECES_HPP
 #define PIECES_HPP
 
-enum Color {BLACK, WHITE};
+enum Color { WHITE, BLACK};
 
 struct EnPassantMe{
     int coordH;
@@ -19,7 +19,7 @@ public:
 
     Piece(const int H, const int V, const char n);
     bool hereMyFigure(int H, int V, char (&position)[8][8]);
-    bool pmove(const int H, const int V, char (&position)[8][8], const int move);
+    bool move(const int H, const int V, char (&position)[8][8], const int move);
 
     int get_coordH();
     int get_coordV();

@@ -8,6 +8,8 @@
 #include <utility>
 
 using namespace std;
+enum Stun {PLAY, DRAW, WINWHITE, WINBLACK};
+
 
 Board::Board(){
     copy(&defaultPosition[0][0], &defaultPosition[0][0] + 8 * 8, &position[0][0]);
@@ -40,9 +42,7 @@ void Board::writeCurrentBoard() {
     }
 }
 
-void Board::push_back_piece(char name, int i, int j,
-            std::vector<std::unique_ptr<Piece>>& piecesWhite,
-            std::vector<std::unique_ptr<Piece>>& piecesBlack){                
+void Board::push_back_piece(char name, int i, int j){                
     switch(name){
         case 'P': 
             piecesBlack.push_back(std::make_unique<Pawn>(i, j, 'P'));
@@ -79,9 +79,6 @@ void Board::push_back_piece(char name, int i, int j,
 
         case 'Q':
             piecesBlack.push_back(std::make_unique<Queen>(i, j, 'Q'));
-            cout << "fffffffffffffffffffffff" << endl;
-            cout << piecesBlack.back()->get_coordH() << "  " << piecesBlack.back()->get_coordV() <<
-            piecesBlack.back()->name << endl;
             break;
         
         case 'q':
@@ -98,176 +95,171 @@ void Board::push_back_piece(char name, int i, int j,
     }
 }
 
-void Board::startGame(std::vector<std::unique_ptr<Piece>>& piecesWhite,
-                        std::vector<std::unique_ptr<Piece>>& piecesBlack){
+void Board::startGame(){
 
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
             push_back_piece(position[j][i], i, j, piecesWhite, piecesBlack);
         }
     }
-    // for (auto it = piecesWhite.begin(); it != piecesWhite.end(); ++it) {
-    //     cout << (*it)->name << endl;
-    // }
 }
 
-bool Board::isCheck(int H, int V, std::vector<std::unique_ptr<Piece>>& pieces, char (&testPosition)[8][8]){
-    
-    for (auto it = pieces.begin(); it != pieces.end(); ++it) {
-        if((*it)->isPosible(H, V, testPosition, 2)){
-            return true;
-        }
-    }
-    return false;
-}
+bool Board::isCheckMate(Color col) {
+    King& king = col ? kingBlack : kingWhite;
+    std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
+    std::vector<std::unique_ptr<Piece>>& myPieces = col ? piecesBlack : piecesWhite;
 
-bool Board::isCheckMate(std::vector<std::unique_ptr<Piece>>& pieces1,
-                        std::vector<std::unique_ptr<Piece>>& pieces2, King &King){
-    
-    int KingH = King.get_coordH();
-    int KingV = King.get_coordV();
-    if (!(isCheck(KingH, KingV, pieces1, position))){
-        return false;
+    int kingH = king.get_coordH();
+    int kingV = king.get_coordV();
+
+
+    if (!isCheck(kingH, kingV, opponentPieces, position)) {
+        return false; 
     }
 
-    for (int dx = -1; dx <= 1; ++dx) {
-        for (int dy = -1; dy <= 1; ++dy) {
-            // Пропустити саму позицію короля
-            if (dx == 0 && dy == 0)continue;
-            
-            int newH = KingH + dx;
-            int newV = KingV + dy;
-            // Перевіряємо, чи нова позиція в межах дошки
-            if (newH >= 0 && newH < 8 && newV >= 0 && newV < 8) continue;
-            
-            // isCHeck() в діному випадку використовується для перевірки
-            // чи перекриває клітинку чужа фігура
-            if (!(King.hereMyFigure(newH, newV, position) || isCheck(newH, newV, pieces1, position))) 
-                return false;
-        }
-    }
     char testPosition[8][8];
-    copy(&position[0][0], &position[0][0] + 8 * 8, &testPosition[0][0]);
-    for (auto it = pieces1.begin(); it != pieces1.end(); ++it) {
-        if((*it)->isPosible(KingH, KingV, position, 2)){    
+    std::copy(&position[0][0], &position[0][0] + 8 * 8, &testPosition[0][0]);
 
-            int attackerH = (*it)->get_coordH();
-            int attackerV = (*it)->get_coordV();
-            int dH = ( attackerH - KingH) / std::max(1, std::abs(attackerH - KingH));
-            int dV = ( attackerH - KingV) / std::max(1, std::abs(attackerV - KingV));
+    for (auto& piece : opponentPieces) {
+        int attackerH = piece->get_coordH();
+        int attackerV = piece->get_coordV();
 
-            int H = KingH + dH;
-            int V = KingV + dV;
+        
+        if (piece->isPosible(kingH, kingV, position, 2)) {
+            
+            int dH = (attackerH - kingH) / std::max(1, std::abs(attackerH - kingH));
+            int dV = (attackerV - kingV) / std::max(1, std::abs(attackerV - kingV));
+
+            
+            int H = kingH + dH;
+            int V = kingV + dV;
+
+            
             while (H != attackerH || V != attackerV) {
-                if (isCheck(H, V, pieces2, position)){
-                    char befor = testPosition[V][H];
-                    testPosition[V][H] = 'R';
-                    if (!(isCheck(KingH, KingV, pieces1, testPosition))){
+                if (king.isUnderAttack(H, V, opponentPieces, position)) {
+                    char before = testPosition[V][H];
+                    testPosition[V][H] = ' '; 
+                    if (king.isUnderAttack(kingH, kingV, opponentPieces, testPosition)) {
+                        testPosition[V][H] = before; 
                         return false;
                     }
-                    testPosition[V][H] = befor;
+                    testPosition[V][H] = before;
                 }
                 H += dH;
                 V += dV;
             }
         }
     }
+
+    return king.ishaveMove(position); 
+}
+
+bool Board::draw(Color col) {
+    King& king = col ? kingBlack : kingWhite;
+    std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
+    std::vector<std::unique_ptr<Piece>>& myPieces = col ? piecesBlack : piecesWhite;
+
+    if (king.isUnderAttack(king.get_coordH(), king.get_coordV(), opponentPieces, position)) {
+        return false; 
+    }
+
+    for (auto& piece : myPieces) {
+        if (piece->ishaveMove(position)) {
+            return false; 
+        }
+    }
+
     return true;
 }
 
-bool Board::draw(std::vector<std::unique_ptr<Piece>>& pieces, King &King){
-    if (isCheck(King.get_coordH(), King.get_coordV(), pieces, position)){
-        return false;
-    }  
-    for (int dx = -1; dx <= 1; ++dx) {
-        for (int dy = -1; dy <= 1; ++dy) {
-            // Пропустити саму позицію короля
-            if (dx == 0 && dy == 0)continue;
-            
-            int newH = King.get_coordH() + dx;
-            int newV = King.get_coordV() + dy;
-            // Перевіряємо, чи нова позиція в межах дошки
-            if (newH >= 0 && newH < 8 && newV >= 0 && newV < 8) continue;
-            
-            // isCHeck() в діному випадку використовується для перевірки
-            // чи перекриває клітинку чужа фігура
-            if (!(King.hereMyFigure(newH, newV, position) || isCheck(newH, newV, pieces, position))) 
-                return false;
-        }
-    }
-    for (auto it = pieces.begin(); it != pieces.end(); ++it) {
-        if((*it)->ishaveMove(position)){
-            return false;
-        }
-    }
-    return true;
-}
-
-void Board::endGame(Color col, std::vector<std::unique_ptr<Piece>> piecesWhite,
-    std::vector<std::unique_ptr<Piece>> piecesBlack){
-
-
-    }
-
-bool Board::move(int currentCoordH, int currentcoordV, int newcoordH, int newCoordV, King King,
-                    std::vector<std::unique_ptr<Piece>>& pieces1,
-                    std::vector<std::unique_ptr<Piece>>& pieces2, char newName ){
+bool Board::move(int currentCoordH, int currentCoordV, int newCoordH, int newCoordV, Color col, char newName) {
+    King& king = col ? kingBlack : kingWhite;
+    std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
+    std::vector<std::unique_ptr<Piece>>& myPieces = col ? piecesBlack : piecesWhite;
 
     char testPosition[8][8];
-    copy(&position[0][0], &position[0][0] + 8 * 8, &testPosition[0][0]);
-    testPosition[currentcoordV][currentCoordH] = ' ';
-    testPosition[newCoordV][newcoordH] = 'R';
-    if (isCheck(King.get_coordH(), King.get_coordV(), pieces1, testPosition))
-        
-       { cout << 'e' << endl; return false;}
+    std::copy(&position[0][0], &position[0][0] + 8 * 8, &testPosition[0][0]);
+    testPosition[currentCoordV][currentCoordH] = ' ';
+    testPosition[newCoordV][newCoordH] = 'R';
 
-for (auto piece = pieces2.begin(); piece != pieces2.end(); ++piece) {
+   
+    if (king.isUnderAttack(king.get_coordH(), king.get_coordV(), opponentPieces, testPosition)) {
+        return false;
+    }
 
-    if ((*piece)->get_coordH() == currentCoordH && (*piece)->get_coordV() == currentcoordV) {
-
-        cout << "eed" << endl;
-        if ((*piece)->pmove(newcoordH, newCoordV, position, numverOfMove)) {
-            if (((*piece)->name == 'P' || (*piece)->name == 'p') && (newCoordV == 7 || newCoordV == 0)) {
-                piece = pieces2.erase(piece);
-                (*piece)->col ? 
-                    push_back_piece(newName, newcoordH, newCoordV, pieces1, pieces2) : 
-                    push_back_piece(newName, newcoordH, newCoordV, pieces2, pieces1);
-                position[newCoordV][newcoordH] = newName;
-                cout << "ff" << endl;
-            }
-
-
-            for (auto it = pieces1.begin(); it != pieces1.end(); ) {
-                if ((*it)->get_coordH() == newcoordH && (*it)->get_coordV() == newCoordV) {
-                    it = pieces1.erase(it); 
+    for (auto piece = myPieces.begin(); piece != myPieces.end(); ++piece) {
+        if ((*piece)->get_coordH() == currentCoordH && (*piece)->get_coordV() == currentCoordV) {
+            if ((*piece)->move(newCoordH, newCoordV, position, 2)) {
+                
+                if (((*piece)->name == 'P' || (*piece)->name == 'p') && (newCoordV == 7 || newCoordV == 0)) {
+                    
+                    piece = myPieces.erase(piece);
+                    push_back_piece(newName, newCoordH, newCoordV); 
                 } else {
-                    ++it; 
+                    
+                    position[newCoordV][newCoordH] = (*piece)->getSymbol();
                 }
+
+                for (auto it = opponentPieces.begin(); it != opponentPieces.end(); ) {
+                    if ((*it)->get_coordH() == newCoordH && (*it)->get_coordV() == newCoordV) {
+                        it = opponentPieces.erase(it);
+                    } else {
+                        ++it;
+                    }
+                }
+
+                return true;
             }
-            return true;
         }
     }
-}
     return false;
 }
 
-
-void Board::canCastle(King& king, Rock& rook, std::vector<std::unique_ptr<Piece>>& pieces) {
-    if (!(king.isFirstMove && rook.isFirstMove))
-        { king.canCastle = false; return; }
-    if (isCheck(king.get_coordH(), king.get_coordV(), pieces, position))
-        { king.canCastle = false; return; }
-
-    int startCol = (rook.get_coordH()  > king.get_coordH()) ? king.get_coordH() + 1 : rook.get_coordH() + 1;
-    int endCol = (rook.get_coordH() > king.get_coordH()) ? rook.get_coordH() : king.get_coordH();
-
-    for (int i = startCol; i < endCol; ++i) {
-        if (position[king.get_coordV()][i] != ' ' || isCheck( i, king.get_coordV(), pieces, position))  
-            { king.canCastle = false; return; }
+King& Board::getKing() {
+    for (const auto& piece : pieces) {
+        if (piece->name == 'K' || piece->name == 'k') {
+            King* kingPtr = dynamic_cast<King*>(piece.get());
+            return *kingPtr;
+        }
     }
-
-    king.canCastle = true;
+    throw std::runtime_error("King not found");
 }
 
+Stun Board::check_position(Color col){
+    if (isCheckMate(col)) return col ? WINBLACK : WINWHITE;
+    if (draw(col)) return DRAW;
+    return PLAY;
+}
 
+bool Board::set_promote(){
+    
+    for (auto it = piecesWhite.begin(); it != piecesWhite.end(); ) {
+        if ((*it)->name == 'P' && (*it)->get_coordV() == 7) {  
+            char newPiece;
+            std::cout << "Promote your pawn! Choose Q (Queen), R (Rook), B (Bishop), or N (Knight): ";
+            std::cin >> newPiece;
+
+            push_back_piece(newPiece, (*it)->get_coordH(), (*it)->get_coordV());  
+            it = piecesWhite.erase(it);  
+        } else {
+            ++it;  
+        }
+    }
+
+
+    for (auto it = piecesBlack.begin(); it != piecesBlack.end(); ) {
+        if ((*it)->name == 'p' && (*it)->get_coordV() == 0) {  
+            char newPiece;
+            std::cout << "Promote your pawn! Choose Q (Queen), R (Rook), B (Bishop), or N (Knight): ";
+            std::cin >> newPiece;
+
+            push_back_piece(newPiece, (*it)->get_coordH(), (*it)->get_coordV());  
+            it = piecesBlack.erase(it);  
+        } else {
+            ++it; 
+        }
+    }
+
+    return true;  
+}
 

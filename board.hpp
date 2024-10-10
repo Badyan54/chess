@@ -1,39 +1,24 @@
-#ifndef BOARD_HPP
-#define BOARD_HPP
 #include <vector>
-#include <memory>
-#include "pieces.hpp"
-
-class Piece;
+#include <pieces.hpp>
+enum Stun {PLAY, DRAW, WINWHITE, WINBLACK};
 
 class Board{
-private:
-    
-    static const char defaultPosition[8][8];
-    char position[8][8];
-    int numverOfMove;
 
-public:
     Board();
     Board(const char myPosition[8][8]);
-    void startGame(std::vector<std::unique_ptr<Piece>>& piecesWhite,
-                    std::vector<std::unique_ptr<Piece>>& piecesBlack);
-    bool isCheckMate(std::vector<std::unique_ptr<Piece>>& pieces1,
-                    std::vector<std::unique_ptr<Piece>>& pieces2, King &King);
 
-    bool isCheck(int coordH, int coordV, std::vector<std::unique_ptr<Piece>>& pieces, char (&testPosition1)[8][8]);
-    bool draw(std::vector<std::unique_ptr<Piece>>& pieces, King &king);
+    std::vector<std::unique_ptr<Piece>> piecesWhite;
+    std::vector<std::unique_ptr<Piece>> piecesBlack;
 
-    bool move(int currentCoordH, int currentcoordV, int newcoordH, int newCoordV, King King,
-                    std::vector<std::unique_ptr<Piece>>& pieces, std::vector<std::unique_ptr<Piece>>& pieces2, char newName );
+    const static char defaultPosition[8][8];
     void writeCurrentBoard();
-    void push_back_piece(char name, int i, int j,
-            std::vector<std::unique_ptr<Piece>>& piecesWhite,
-            std::vector<std::unique_ptr<Piece>>& piecesBlack);
-    void endGame(Color col, std::vector<std::unique_ptr<Piece>> piecesWhite,
-    std::vector<std::unique_ptr<Piece>> piecesBlack);
-    void canCastle(King& king, Rock& rook, std::vector<std::unique_ptr<Piece>>& pieces);
-    
-};
+    void push_back_piece(char name, int i, int j);
+    void startGame();
+    bool move(int currentCoordH, int currentcoordV, int newcoordH, int newCoordV, char newName, Color col);
+    bool isCheckMate(Color col);
+    bool draw(Color col);
+    King& getKing(std::vector<std::unique_ptr<Piece>>& pieces);
+    bool set_promote();
+    Stun check_position(Color col);
 
-#endif 
+}
