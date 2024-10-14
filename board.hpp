@@ -22,12 +22,13 @@ public:
     void startGame();
     bool isCheckMate(Color col);
     bool draw(Color col);
-    bool move(int currentCoordH, int currentCoordV, int newCoordH, int newCoordV, Color col, char newName);
+    bool move(int currentX, int currentY, int newX, int newY, Color col, char newName);
     King& getKing(Color col);
     bool set_promote();
     Stun check_position(Color col);
-    bool canCastle(King &king, Rock &rook, std::vector<std::unique_ptr<Piece>>& opponentPieces);
-    bool castle(King &king, Rock *rook, std::vector<std::unique_ptr<Piece>>& opponentPieces);
-    Rock* get_rock(int H, std::vector<std::unique_ptr<Piece>>& pieces, Color col);
+    bool canCastle(King &king, Rock &rook, Color col);
+    bool castle(King &king, Rock *rook, Color col);
+    Rock* get_rock(int X, Color col);
+    bool isUnderAttack(int X, int Y, Color col, char (&position)[8][8]);
 
 };

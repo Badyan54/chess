@@ -7,48 +7,48 @@
 #include <memory>
 using namespace std;
 
-Piece::Piece(const int H, const int V, const char n){
+Piece::Piece(const int X, const int Y, const char n){
     if (n >= 'a' && n <= 'z') {
         col = WHITE;
     } else if (n >= 'A' && n <= 'Z') {
         col = BLACK;
     } 
-    coordH = H;
-    coordV = V;
+    x = X;
+    y = Y;
     name = n;
 }
 
-int Piece::get_coordH(){
-    return coordH;
+int Piece::get_x(){
+    return x;
 }
-int Piece::get_coordV(){
-    return coordV;
-}
-
-void Piece::set_coord(int H, int V){
-    coordH = H;
-    coordV = V;
+int Piece::get_y(){
+    return y;
 }
 
-bool Piece::hereMyFigure(int H, int V, char (&position)[8][8]){
+void Piece::set_coord(int X, int Y){
+    x = X;
+    y = Y;
+}
+
+bool Piece::hereMyFigure(int X, int Y, char (&position)[8][8]){
     string pieces = (col == WHITE) ? "prbhq": "PRBHQ";
 
     for (int i = 0; i < pieces.length(); i++){
-        if (position[V][H] == pieces[i])
+        if (position[Y][X] == pieces[i])
             return true;
     }
     return false;
 }
 
-bool Piece::move(const int H, const int V, char (&position)[8][8], const int move){
-    if (hereMyFigure(H, V, position))
+bool Piece::move(const int X, const int Y, char (&position)[8][8], const int move){
+    if (hereMyFigure(X, Y, position))
         return false;
 
-    if ( isPosible(H, V, position, move)){
-        position[coordV][coordH] = ' ';
-        coordH = H;
-        coordV = V;
-        position[coordV][coordH] = name;
+    if ( isPosible(X, Y, position, move)){
+        position[y][x] = ' ';
+        x = X;
+        y = Y;
+        position[y][x] = name;
         return true;
     }
     return false;
@@ -58,61 +58,61 @@ bool Piece::move(const int H, const int V, char (&position)[8][8], const int mov
 
 EnPassantMe Pawn::enpas = {0, 0, 0};
 
-Pawn::Pawn(const int coordH, const int coordV, char name)
-    : Piece(coordH, coordV, name){
+Pawn::Pawn(const int x, const int y, char name)
+    : Piece(x, y, name){
 
     direc = col ? -1 : 1;
     isFirstMove = true;
 }
 
-void Pawn::setEnPasant(int H, int V, int m){
-    enpas.coordH = H;
-    enpas.coordV = V;
+void Pawn::setEnPasant(int X, int Y, int m){
+    enpas.x = X;
+    enpas.y = Y;
     enpas.move = m;
 }
 
-bool Pawn::isEnPasant(int H, int V, int m){
+bool Pawn::isEnPasant(int X, int Y, int m){
 
-    return enpas.move == m  && enpas.coordH == H && enpas.coordV == V;
+    return enpas.move == m  && enpas.x == X && enpas.y == Y;
 }
 
 
-bool Pawn::isPosible(const int H, const int V, char (&position)[8][8], const int move) {
-    if (coordH == H) {
-        if (coordV == V - 1 * direc && position[V][H] == ' ') {
+bool Pawn::isPosible(const int X, const int Y, char (&position)[8][8], const int move) {
+    if (x == X) {
+        if (y == Y - 1 * direc && position[Y][X] == ' ') {
             isFirstMove = false;
             return true;
         }
-        if (isFirstMove && coordV == V - 2 * direc) {
+        if (isFirstMove && y == Y - 2 * direc) {
             isFirstMove = false;
-            setEnPasant(H, V, move);
+            setEnPasant(X, Y, move);
             return true;
         }
     }
     // Перевірка на атаку "en passant"
-    if (isEnPasant(H, V - 1 * direc, move)) {
+    if (isEnPasant(X, Y - 1 * direc, move)) {
         isFirstMove = false;
-        position[enpas.coordV][enpas.coordH] = ' ';
+        position[enpas.y][enpas.x] = ' ';
         return true;
     }
     return false;
 }
 
 bool Pawn::ishaveMove(char (&position)[8][8]) {
-    if (isFirstMove && coordV + 2 < 8 && position[coordV + 2][coordH] == ' ') {
+    if (isFirstMove && y + 2 < 8 && position[y + 2][x] == ' ') {
         return true; 
     }
 
-    if (coordV + 1 < 8 && position[coordV + 1][coordH] == ' ') {
+    if (y + 1 < 8 && position[y + 1][x] == ' ') {
         return true; 
     }
 
-    if (coordH + 1 < 8 && coordV + 1 < 8 && position[coordV + 1][coordH + 1] != ' ' && 
-        !hereMyFigure(coordH + 1, coordV + 1, position)) {
+    if (x + 1 < 8 && y + 1 < 8 && position[y + 1][x + 1] != ' ' && 
+        !hereMyFigure(x + 1, y + 1, position)) {
         return true; 
     }
-    if (coordH - 1 >= 0 && coordV + 1 < 8 && position[coordV + 1][coordH - 1] != ' ' && 
-        !hereMyFigure(coordH - 1, coordV + 1, position)) {
+    if (x - 1 >= 0 && y + 1 < 8 && position[y + 1][x - 1] != ' ' && 
+        !hereMyFigure(x - 1, y + 1, position)) {
         return true; 
     }
 
@@ -120,29 +120,29 @@ bool Pawn::ishaveMove(char (&position)[8][8]) {
 }
 
 
-Rock::Rock(const int coordH, const int coordV, const char name)
-    : Piece(coordH, coordV,  name){
+Rock::Rock(const int x, const int y, const char name)
+    : Piece(x, y,  name){
         hasMoved = false;
 }
 
-bool Rock::isPosible(const int H, const int V, char (&position)[8][8], const int move){
+bool Rock::isPosible(const int X, const int Y, char (&position)[8][8], const int move){
     
-    if (coordH == H) {
-        int start = std::min(coordV, V) + 1;
-        int end = std::max(coordV, V);
+    if (x == X) {
+        int start = std::min(y, Y) + 1;
+        int end = std::max(y, Y);
         for (int i = start; i < end; ++i) {
-            if (position[i][H] != ' ') {
+            if (position[i][X] != ' ') {
                 return false; 
             }
         }
         hasMoved = true;
         return true; 
     }
-    if (coordV == V) {
-        int start = std::min(coordH, H) + 1;
-        int end = std::max(coordH, H);
+    if (y == Y) {
+        int start = std::min(x, X) + 1;
+        int end = std::max(x, X);
         for (int i = start; i < end; ++i) {
-            if (position[V][i] != ' ') {
+            if (position[Y][i] != ' ') {
                 return false; 
             }
         }
@@ -154,23 +154,23 @@ bool Rock::isPosible(const int H, const int V, char (&position)[8][8], const int
 
 bool Rock::ishaveMove(char (&position)[8][8]) {
     // Перевірка руху вниз
-    for (int i = coordV + 1; i <= 7; i++) {
-        if (position[i][coordH] == ' ' || !hereMyFigure(coordH, i, position)) {
+    for (int i = y + 1; i <= 7; i++) {
+        if (position[i][x] == ' ' || !hereMyFigure(x, i, position)) {
             return true;
         }
-        if (!hereMyFigure(coordH, i, position)) { // Якщо фігура противника
+        if (!hereMyFigure(x, i, position)) { // Якщо фігура противника
             return true; // Можливий удар
         }
         break; // Якщо зустріли свою фігуру
     }
 
     // Перевірка руху вгору
-    for (int i = coordV - 1; i >= 0; i--) {
-        if (position[i][coordH] == ' ' || !hereMyFigure(coordH, i, position)) {
+    for (int i = y - 1; i >= 0; i--) {
+        if (position[i][x] == ' ' || !hereMyFigure(x, i, position)) {
             
             return true;
         }
-        if (!hereMyFigure(coordH, i, position)) {
+        if (!hereMyFigure(x, i, position)) {
 
             return true;
         }
@@ -178,22 +178,22 @@ bool Rock::ishaveMove(char (&position)[8][8]) {
     }
 
     // Перевірка руху вправо
-    for (int i = coordH + 1; i <= 7; i++) {
-        if (position[coordV][i] == ' ' || !hereMyFigure(i, coordV, position)) {
+    for (int i = x + 1; i <= 7; i++) {
+        if (position[y][i] == ' ' || !hereMyFigure(i, y, position)) {
             return true;
         }
-        if (!hereMyFigure(i, coordV, position)) {
+        if (!hereMyFigure(i, y, position)) {
             return true;
         }
         break; 
     }
 
     // Перевірка руху вліво
-    for (int i = coordH - 1; i >= 0; i--) {
-        if (position[coordV][i] == ' ' || !hereMyFigure(i, coordV, position)) {
+    for (int i = x - 1; i >= 0; i--) {
+        if (position[y][i] == ' ' || !hereMyFigure(i, y, position)) {
             return true;
         }
-        if (!hereMyFigure(i, coordV, position)) {
+        if (!hereMyFigure(i, y, position)) {
             return true;
         }
         break; 
@@ -201,24 +201,26 @@ bool Rock::ishaveMove(char (&position)[8][8]) {
 
     return false; // Якщо немає можливих ходів
 }
-
-
-Bishop::Bishop(const int coordH, const int coordV, const char name)
-    : Piece(coordH, coordV, name){
+bool Rock::isHasMoved(){
+    return hasMoved;
 }
 
-bool Bishop::isPosible(const int H, const int V, char (&position)[8][8], const int move) {
-    int deltaH = abs(coordH - H);
-    int deltaV = abs(coordV - V);
+Bishop::Bishop(const int x, const int y, const char name)
+    : Piece(x, y, name){
+}
+
+bool Bishop::isPosible(const int X, const int Y, char (&position)[8][8], const int move) {
+    int deltaX = abs(x - X);
+    int deltaY = abs(y - Y);
 
     // Перевірка, чи слон рухається по діагоналі
-    if (deltaH == deltaV) {
-        int stepH = (H > coordH) ? 1 : -1;  // Напрямок по горизонталі
-        int stepV = (V > coordV) ? 1 : -1;  // Напрямок по вертикалі
+    if (deltaX == deltaY) {
+        int stepX = (X > x) ? 1 : -1;  // Напрямок по горизонталі
+        int stepY = (Y > y) ? 1 : -1;  // Напрямок по вертикалі
 
         // Перевірка всіх клітин на шляху
-        for (int i = 1; i < deltaH; i++) {
-            if (position[coordV + i * stepV][coordH + i * stepH] != ' ') {
+        for (int i = 1; i < deltaX; i++) {
+            if (position[y + i * stepY][x + i * stepX] != ' ') {
                 return false;  // Якщо є фігура на шляху
             }
         }
@@ -229,7 +231,7 @@ bool Bishop::isPosible(const int H, const int V, char (&position)[8][8], const i
 
 
 bool Bishop::ishaveMove(char (&position)[8][8]) {
-    for (int i = coordH + 1, j = coordV + 1; i <= 7 && j <= 7; i++, j++) {
+    for (int i = x + 1, j = y + 1; i <= 7 && j <= 7; i++, j++) {
         if (position[j][i] == ' ' || !hereMyFigure(i, j, position)) {
             return true; 
         }
@@ -238,7 +240,7 @@ bool Bishop::ishaveMove(char (&position)[8][8]) {
         }
     }
 
-    for (int i = coordH + 1, j = coordV - 1; i <= 7 && j >= 0; i++, j--) {
+    for (int i = x + 1, j = y - 1; i <= 7 && j >= 0; i++, j--) {
         if (position[j][i] == ' ' || !hereMyFigure(i, j, position)) {
             return true; 
         }
@@ -247,7 +249,7 @@ bool Bishop::ishaveMove(char (&position)[8][8]) {
         }
     }
 
-    for (int i = coordH - 1, j = coordV + 1; i >= 0 && j <= 7; i--, j++) {
+    for (int i = x - 1, j = y + 1; i >= 0 && j <= 7; i--, j++) {
         if (position[j][i] == ' ' || !hereMyFigure(i, j, position)) {
             return true; 
         }
@@ -256,7 +258,7 @@ bool Bishop::ishaveMove(char (&position)[8][8]) {
         }
     }
 
-    for (int i = coordH - 1, j = coordV - 1; i >= 0 && j >= 0; i--, j--) {
+    for (int i = x - 1, j = y - 1; i >= 0 && j >= 0; i--, j--) {
         if (position[j][i] == ' ' || !hereMyFigure(i, j, position)) {
             return true; 
         }
@@ -269,16 +271,16 @@ bool Bishop::ishaveMove(char (&position)[8][8]) {
 }
 
 
-Queen::Queen(const int coordH, const int coordV, const char name)
-    : Piece(coordH, coordV, name),
-    rock(coordH, coordV, name),
-    bishop(coordH, coordV, name){
+Queen::Queen(const int x, const int y, const char name)
+    : Piece(x, y, name),
+    rock(x, y, name),
+    bishop(x, y, name){
 }
 
-bool Queen::isPosible(const int H, const int V, char (&position)[8][8], const int move){
-    if (rock.isPosible(H, V, position, move) || bishop.isPosible(H, V, position, move)){
-        bishop.coordV = rock.coordV = V;
-        bishop.coordH = rock.coordH = H;
+bool Queen::isPosible(const int X, const int Y, char (&position)[8][8], const int move){
+    if (rock.isPosible(X, Y, position, move) || bishop.isPosible(X, Y, position, move)){
+        bishop.set_coord(X, Y);
+        rock.set_coord(X, Y);
         return true;
     }
     return false;
@@ -288,15 +290,15 @@ bool Queen::ishaveMove(char (&position)[8][8]){
     return (rock.ishaveMove(position) || bishop.ishaveMove(position));
 }
 
-Knight::Knight(const int coordH, const int coordV, const char name)
-    : Piece(coordH, coordV, name){
+Knight::Knight(const int x, const int y, const char name)
+    : Piece(x, y, name){
 
 }
-bool Knight::isPosible(const int H, const int V, char (&position)[8][8], const int move){
-    int deltaH = abs(coordH - H);
-    int deltaV = abs(coordV - V);
+bool Knight::isPosible(const int X, const int Y, char (&position)[8][8], const int move){
+    int deltaX = abs(x - X);
+    int deltaY = abs(y - Y);
 
-    return (deltaH == 1 && deltaV == 2) || (deltaH == 2 && deltaV == 1);
+    return (deltaX == 1 && deltaY == 2) || (deltaX == 2 && deltaY == 1);
 
 }
 
@@ -307,11 +309,11 @@ bool Knight::ishaveMove(char (&position)[8][8]) {
     };
 
     for (int i = 0; i < 8; ++i) {
-        int newH = coordH + moves[i][0]; 
-        int newV = coordV + moves[i][1];
+        int newX = x + moves[i][0]; 
+        int newY = y + moves[i][1];
 
-        if (newH >= 0 && newH < 8 && newV >= 0 && newV < 8) {
-            if (position[newV][newH] == ' ' || !hereMyFigure(newH, newV, position)) {
+        if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+            if (position[newY][newX] == ' ' || !hereMyFigure(newX, newY, position)) {
                 return true; 
             }
         }
@@ -319,16 +321,16 @@ bool Knight::ishaveMove(char (&position)[8][8]) {
     return false; 
 }
 
-King::King(const int coordH, const int coordV, const char name)
-    : Piece(coordH, coordV, name){
+King::King(const int x, const int y, const char name)
+    : Piece(x, y, name){
     hasMoved = false;
 }
 
-bool King::isPosible(const int H, const int V, char (&position)[8][8], const int move){
-    int deltaH = abs(coordH - H);
-    int deltaV = abs(coordV - V);
+bool King::isPosible(const int X, const int Y, char (&position)[8][8], const int move){
+    int deltaX = abs(x - X);
+    int deltaY = abs(y - Y);
 
-    if (deltaH <= 1 && deltaV <= 1){
+    if (deltaX <= 1 && deltaY <= 1){
         hasMoved = true;
         return true;
     }
@@ -343,11 +345,11 @@ bool King::ishaveMove(char (&position)[8][8]) {
     };
 
     for (int i = 0; i < 8; ++i) {
-        int newH = coordH + moves[i][0];
-        int newV = coordV + moves[i][1];
+        int newX = x + moves[i][0];
+        int newY = y + moves[i][1];
 
-        if (newH >= 0 && newH < 8 && newV >= 0 && newV < 8) {
-            if (position[newV][newH] == ' ' || !hereMyFigure(newH, newV, position)) {
+        if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+            if (position[newY][newX] == ' ' || !hereMyFigure(newX, newY, position)) {
 
                     return true; 
 
@@ -357,15 +359,19 @@ bool King::ishaveMove(char (&position)[8][8]) {
     return false; 
 }
 
-bool King::isUnderAttack(int H, int V, std::vector<std::unique_ptr<Piece>>& opponentPieces, char (&position)[8][8]) {
-    for (const auto& piece : opponentPieces) {
+// bool King::isUnderAttack(int X, int Y, std::vector<std::unique_ptr<Piece>>& opponentPieces, char (&position)[8][8]) {
+//     for (const auto& piece : opponentPieces) {
         
-        if (piece->isPosible(H, V, position, 0)) {
-            cout << piece->name << "  "<< piece->get_coordH() << piece->get_coordV() << endl;
-            return true;
-        }
-    }
-    return false;
+//         if (piece->isPosible(X, Y, position, 0)) {
+//             cout << piece->name << "  "<< piece->get_x() << piece->get_y() << endl;
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+
+bool King::isHasMoved(){
+    return hasMoved;
 }
 
 

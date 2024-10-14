@@ -5,89 +5,88 @@
 enum Color { WHITE, BLACK};
 
 struct EnPassantMe{
-    int coordH;
-    int coordV;
+    int x;
+    int y;
     int move;
     
 };
 
 class Piece{
+protected:
+    int x;
+    int y;
+    bool hereMyFigure(int X, int Y, char (&position)[8][8]);
 public:
     char name;
     Color col;
-    int coordH;
-    int coordV;
+    Piece(const int X, const int Y, const char n);
+    bool move(const int X, const int Y, char (&position)[8][8], const int move);
+    int get_x();
+    int get_y();
+    void set_coord(int X, int Y);
 
-    Piece(const int H, const int V, const char n);
-    bool hereMyFigure(int H, int V, char (&position)[8][8]);
-    bool move(const int H, const int V, char (&position)[8][8], const int move);
-
-    int get_coordH();
-    int get_coordV();
-    void set_coord(int H, int V);
     virtual bool ishaveMove(char (&position)[8][8]) = 0;
-    virtual bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) = 0;
+    virtual bool isPosible(const int x, const int y, char (&position)[8][8], const int move) = 0;
     
 };
 
 class Pawn : public Piece{
-public:
-    bool isFirstMove;
-    static EnPassantMe enpas;
-    int direc;
-    Pawn(const int coordH, const int coordV, const char name);
-
-    static void setEnPasant(int H, int V, int move);
-    static bool isEnPasant(int H, int V, int move);
-    virtual bool ishaveMove(char (&position)[8][8]) override;
-    bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
-
 private:
-    // Color col;
-
+    bool isFirstMove;
+    int direc;
+    static EnPassantMe enpas;
+    static void setEnPasant(int X, int Y, int move);
+    static bool isEnPasant(int X, int Y, int move);
+public:
+    Pawn(const int x, const int y, const char name);
+    bool ishaveMove(char (&position)[8][8]) override;
+    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
 };
 
 class Rock : public Piece{
-public:
+private:
     bool hasMoved;
-    Rock(const int H, const int V, const char name);
+public:
+    Rock(const int X, const int Y, const char name);
+    bool isHasMoved();
     bool ishaveMove(char (&position)[8][8]) override;
-    bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
+    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
 
 };
 
 class Bishop : public Piece{
 public:
-    Bishop(const int H, const int V, const char name);
+    Bishop(const int X, const int Y, const char name);
     bool ishaveMove(char (&position)[8][8]) override;
-    bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
+    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
 };
 
 class Queen : public Piece{
 private:
-Bishop bishop;
-Rock rock; 
+    Bishop bishop;
+    Rock rock; 
 public:
+    Queen(const int X, const int Y, const char name);
     bool ishaveMove(char (&position)[8][8]) override;
-    Queen(const int H, const int V, const char name);
-    bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
+    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
 };
 
 class King : public Piece{
-public:
+private:
     bool hasMoved;
+public:
+    King(const int X, const int Y, const char name);
+    bool isHasMoved();
     bool ishaveMove(char (&position)[8][8]) override;
-    King(const int H, const int V, const char name);
-    bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
-    bool isUnderAttack(int H, int V, std::vector<std::unique_ptr<Piece>>& opponentPieces, char (&position)[8][8]);
-    
+    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
+   // bool isUnderAttack(int X, int Y, std::vector<std::unique_ptr<Piece>>& opponentPieces, char (&position)[8][8]);
 };
 
 class Knight : public Piece{
 public:
+    Knight(const int X, const int Y, const char name);
     bool ishaveMove(char (&position)[8][8]) override;
-    Knight(const int H, const int V, const char name);
-    bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
+    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
 };
 
 #endif // PIECES_HPP
