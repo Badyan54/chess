@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <iostream>
+#include <memory>
 using namespace std;
 
 Piece::Piece(const int H, const int V, const char n){
@@ -22,6 +23,11 @@ int Piece::get_coordH(){
 }
 int Piece::get_coordV(){
     return coordV;
+}
+
+void Piece::set_coord(int H, int V){
+    coordH = H;
+    coordV = V;
 }
 
 bool Piece::hereMyFigure(int H, int V, char (&position)[8][8]){
@@ -77,19 +83,12 @@ bool Pawn::isPosible(const int H, const int V, char (&position)[8][8], const int
             isFirstMove = false;
             return true;
         }
-        else if (coordV == V - 1 * direc && position[V][H] != ' ') {
+        if (isFirstMove && coordV == V - 2 * direc) {
             isFirstMove = false;
+            setEnPasant(H, V, move);
             return true;
         }
     }
-    
-    // Перевірка на перший хід
-    if (isFirstMove && coordV == V - 2 * direc) {
-        isFirstMove = false;
-        setEnPasant(H, V, move);
-        return true;
-    }
-    
     // Перевірка на атаку "en passant"
     if (isEnPasant(H, V - 1 * direc, move)) {
         isFirstMove = false;
@@ -123,7 +122,7 @@ bool Pawn::ishaveMove(char (&position)[8][8]) {
 
 Rock::Rock(const int coordH, const int coordV, const char name)
     : Piece(coordH, coordV,  name){
-        isFirstMove = true;
+        hasMoved = false;
 }
 
 bool Rock::isPosible(const int H, const int V, char (&position)[8][8], const int move){
@@ -136,7 +135,7 @@ bool Rock::isPosible(const int H, const int V, char (&position)[8][8], const int
                 return false; 
             }
         }
-        isFirstMove = false;
+        hasMoved = true;
         return true; 
     }
     if (coordV == V) {
@@ -147,7 +146,7 @@ bool Rock::isPosible(const int H, const int V, char (&position)[8][8], const int
                 return false; 
             }
         }
-        isFirstMove = false;
+        hasMoved = true;
         return true; 
     }
     return false;
@@ -168,9 +167,11 @@ bool Rock::ishaveMove(char (&position)[8][8]) {
     // Перевірка руху вгору
     for (int i = coordV - 1; i >= 0; i--) {
         if (position[i][coordH] == ' ' || !hereMyFigure(coordH, i, position)) {
+            
             return true;
         }
         if (!hereMyFigure(coordH, i, position)) {
+
             return true;
         }
         break; 
@@ -206,22 +207,26 @@ Bishop::Bishop(const int coordH, const int coordV, const char name)
     : Piece(coordH, coordV, name){
 }
 
-bool Bishop::isPosible(const int H, const int V, char (&position)[8][8], const int move){
-    int deltaH = abs(coordH - H); int deltaV = abs(coordV - V);
+bool Bishop::isPosible(const int H, const int V, char (&position)[8][8], const int move) {
+    int deltaH = abs(coordH - H);
+    int deltaV = abs(coordV - V);
 
-    if ( deltaH == deltaV ){
+    // Перевірка, чи слон рухається по діагоналі
+    if (deltaH == deltaV) {
+        int stepH = (H > coordH) ? 1 : -1;  // Напрямок по горизонталі
+        int stepV = (V > coordV) ? 1 : -1;  // Напрямок по вертикалі
 
-        int moveH = coordH > H ? -1 : 1;
-        int moveV = coordV > V ? -1 : 1;
-
-        for(int i = 1; i < deltaH; i++ ){
-            if(position[V + i * moveV ][H + i * moveH] != ' ')
-                return false;
+        // Перевірка всіх клітин на шляху
+        for (int i = 1; i < deltaH; i++) {
+            if (position[coordV + i * stepV][coordH + i * stepH] != ' ') {
+                return false;  // Якщо є фігура на шляху
             }
-        return true;
+        }
+        return true;  // Якщо шлях вільний
     }
-    return false;
+    return false;  // Якщо не діагональний хід
 }
+
 
 bool Bishop::ishaveMove(char (&position)[8][8]) {
     for (int i = coordH + 1, j = coordV + 1; i <= 7 && j <= 7; i++, j++) {
@@ -272,10 +277,8 @@ Queen::Queen(const int coordH, const int coordV, const char name)
 
 bool Queen::isPosible(const int H, const int V, char (&position)[8][8], const int move){
     if (rock.isPosible(H, V, position, move) || bishop.isPosible(H, V, position, move)){
-        bishop.coordV = V;
-        bishop.coordH = H;
-        rock.coordV = V;
-        rock.coordH = H;
+        bishop.coordV = rock.coordV = V;
+        bishop.coordH = rock.coordH = H;
         return true;
     }
     return false;
@@ -316,32 +319,24 @@ bool Knight::ishaveMove(char (&position)[8][8]) {
     return false; 
 }
 
-
-
 King::King(const int coordH, const int coordV, const char name)
     : Piece(coordH, coordV, name){
-    isFirstMove = true;
-    canCastle = false;
+    hasMoved = false;
 }
 
 bool King::isPosible(const int H, const int V, char (&position)[8][8], const int move){
     int deltaH = abs(coordH - H);
     int deltaV = abs(coordV - V);
 
-    if (canCastle){
-        if (coordH + 2 == H && coordV == V){
-            position[V][H-1] = col ? 'R' : 'r';
-        }
-        if (coordH - 2 == H && coordV == V){
-
-        }
-
+    if (deltaH <= 1 && deltaV <= 1){
+        hasMoved = true;
+        return true;
     }
-    return deltaH <= 1 && deltaV <= 1;
+    return false;
     
 }
 
-bool King::ishaveMove(char (&position)[8][8], std::vector<std::unique_ptr<Piece>>& opponentPieces) {
+bool King::ishaveMove(char (&position)[8][8]) {
     int moves[8][2] = {
         {1, 0},  {1, 1},  {0, 1},  {-1, 1},
         {-1, 0}, {-1, -1}, {0, -1}, {1, -1}
@@ -354,9 +349,8 @@ bool King::ishaveMove(char (&position)[8][8], std::vector<std::unique_ptr<Piece>
         if (newH >= 0 && newH < 8 && newV >= 0 && newV < 8) {
             if (position[newV][newH] == ' ' || !hereMyFigure(newH, newV, position)) {
 
-                if (!isUnderAttack(newH, newV, opponentPieces, position)) {
                     return true; 
-                }
+
             }
         }
     }
@@ -365,7 +359,9 @@ bool King::ishaveMove(char (&position)[8][8], std::vector<std::unique_ptr<Piece>
 
 bool King::isUnderAttack(int H, int V, std::vector<std::unique_ptr<Piece>>& opponentPieces, char (&position)[8][8]) {
     for (const auto& piece : opponentPieces) {
+        
         if (piece->isPosible(H, V, position, 0)) {
+            cout << piece->name << "  "<< piece->get_coordH() << piece->get_coordV() << endl;
             return true;
         }
     }

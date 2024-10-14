@@ -5,30 +5,34 @@
 #include <vector>
 #include <memory>
 #include <cmath>
-#include <utility>
+
+
+
 
 using namespace std;
-enum Stun {PLAY, DRAW, WINWHITE, WINBLACK};
 
 
 Board::Board(){
     copy(&defaultPosition[0][0], &defaultPosition[0][0] + 8 * 8, &position[0][0]);
     numverOfMove = 0;
+
 }
 Board::Board(const char myPosition[8][8]) {
     copy(&myPosition[0][0], &myPosition[0][0] + 8 * 8, &position[0][0]);
-    numverOfMove= 0;
+    numverOfMove = 0;
+
+
 }
 
 const char Board::defaultPosition[8][8] = {
-    {'r', 'h', ' ', 'q', 'k', 'b', 'h', 'r'},
+    {'r', ' ', ' ', 'q', 'k', 'b', ' ', 'r'},
     {'p', 'p', 'P', 'p', 'p', 'p', 'p', 'p'},
+    {' ', ' ', 'B', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-    {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-    {' ', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
-    {'R', 'H', 'B', 'Q', 'K', 'B', 'H', 'R'}
+    {' ', 'P', 'P', 'P', 'P', 'P', 'P', ' '},
+    {'R', ' ', ' ', 'K', ' ', ' ', ' ', 'R'}
 };
 
 void Board::writeCurrentBoard() {
@@ -96,16 +100,17 @@ void Board::push_back_piece(char name, int i, int j){
 }
 
 void Board::startGame(){
-
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
-            push_back_piece(position[j][i], i, j, piecesWhite, piecesBlack);
+            push_back_piece(position[j][i], i, j);
         }
     }
+    kingWhite = &getKing(WHITE);
+    kingBlack = &getKing(BLACK);
 }
 
 bool Board::isCheckMate(Color col) {
-    King& king = col ? kingBlack : kingWhite;
+    King& king = col ? (*kingBlack) : (*kingWhite);
     std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
     std::vector<std::unique_ptr<Piece>>& myPieces = col ? piecesBlack : piecesWhite;
 
@@ -113,7 +118,7 @@ bool Board::isCheckMate(Color col) {
     int kingV = king.get_coordV();
 
 
-    if (!isCheck(kingH, kingV, opponentPieces, position)) {
+    if (king.isUnderAttack(kingH, kingV, opponentPieces, position)) {
         return false; 
     }
 
@@ -155,25 +160,24 @@ bool Board::isCheckMate(Color col) {
 }
 
 bool Board::draw(Color col) {
-    King& king = col ? kingBlack : kingWhite;
+    King& king = col ? (*kingBlack) : (*kingWhite);
     std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
     std::vector<std::unique_ptr<Piece>>& myPieces = col ? piecesBlack : piecesWhite;
 
     if (king.isUnderAttack(king.get_coordH(), king.get_coordV(), opponentPieces, position)) {
         return false; 
     }
-
     for (auto& piece : myPieces) {
         if (piece->ishaveMove(position)) {
             return false; 
         }
     }
-
     return true;
 }
 
 bool Board::move(int currentCoordH, int currentCoordV, int newCoordH, int newCoordV, Color col, char newName) {
-    King& king = col ? kingBlack : kingWhite;
+    
+    King& king = col ? (*kingBlack) : (*kingWhite);
     std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
     std::vector<std::unique_ptr<Piece>>& myPieces = col ? piecesBlack : piecesWhite;
 
@@ -184,21 +188,25 @@ bool Board::move(int currentCoordH, int currentCoordV, int newCoordH, int newCoo
 
    
     if (king.isUnderAttack(king.get_coordH(), king.get_coordV(), opponentPieces, testPosition)) {
+        cout << "wtf" << endl;
         return false;
     }
-
     for (auto piece = myPieces.begin(); piece != myPieces.end(); ++piece) {
         if ((*piece)->get_coordH() == currentCoordH && (*piece)->get_coordV() == currentCoordV) {
+            if (king.get_coordH() == currentCoordH && king.get_coordV() == currentCoordV){
+                if(abs(king.get_coordH() - newCoordH) == 2){
+
+                    return castle(king, get_rock(newCoordH, myPieces, col), opponentPieces);
+                }
+            }
             if ((*piece)->move(newCoordH, newCoordV, position, 2)) {
                 
                 if (((*piece)->name == 'P' || (*piece)->name == 'p') && (newCoordV == 7 || newCoordV == 0)) {
                     
                     piece = myPieces.erase(piece);
-                    push_back_piece(newName, newCoordH, newCoordV); 
-                } else {
-                    
-                    position[newCoordV][newCoordH] = (*piece)->getSymbol();
-                }
+                    push_back_piece(newName, newCoordH, newCoordV);
+                    position[newCoordV][newCoordH] = newName;
+                } 
 
                 for (auto it = opponentPieces.begin(); it != opponentPieces.end(); ) {
                     if ((*it)->get_coordH() == newCoordH && (*it)->get_coordV() == newCoordV) {
@@ -215,7 +223,8 @@ bool Board::move(int currentCoordH, int currentCoordV, int newCoordH, int newCoo
     return false;
 }
 
-King& Board::getKing() {
+King& Board::getKing(Color col) {
+    std::vector<std::unique_ptr<Piece>>& pieces = col ? piecesBlack : piecesWhite ;
     for (const auto& piece : pieces) {
         if (piece->name == 'K' || piece->name == 'k') {
             King* kingPtr = dynamic_cast<King*>(piece.get());
@@ -261,5 +270,67 @@ bool Board::set_promote(){
     }
 
     return true;  
+}
+
+bool Board::canCastle(King &king, Rock &rook, std::vector<std::unique_ptr<Piece>>& opponentPieces) {
+    // Перевіряємо, чи король і тура не рухалися
+    if (king.hasMoved || rook.hasMoved ||
+        king.isUnderAttack(king.get_coordH(), king.get_coordV(), opponentPieces, position)) {
+            cout << "hm";
+            return false;
+        }
+    int startH = king.coordH < rook.coordH ? king.coordH : rook.coordH;
+    int endH = king.coordH > rook.coordH ? king.coordH : rook.coordH;
+
+    for (int i = startH + 1; i < endH; ++i) {
+        if (position[king.coordV][i] != ' '||
+        king.isUnderAttack( i, king.get_coordV(), opponentPieces, position)){
+            cout << king.get_coordH() << " " << i << endl;
+            return false;
+        }  // Якщо на шляху є фігура
+    }
+    cout << "hm";
+    return true; 
+}
+
+bool Board::castle(King &king, Rock *rook, std::vector<std::unique_ptr<Piece>>& opponentPieces) {
+    if (rook == nullptr) return false;
+
+    if (canCastle(king, (*rook), opponentPieces)) {
+        if ((*rook).coordH > king.coordH) {
+            // Рокіровка на праву сторону
+            position[king.coordV][king.coordH + 1] = (*rook).name;
+            position[king.coordV][king.coordH + 2] = king.name;
+            position[rook->coordV][rook->coordH] = position[king.coordV][king.coordH] = ' ';
+
+            (*rook).set_coord(king.coordH + 1, king.coordV);
+            king.set_coord(king.coordH + 2, king.coordV);
+        } else { 
+
+            position[king.coordV][king.coordH - 1] = (*rook).name;
+            position[king.coordV][king.coordH - 2] = king.name;
+            position[rook->coordV][rook->coordH] = position[king.coordV][king.coordH] = ' ';
+            (*rook).set_coord(king.coordH - 1, king.coordV);
+            king.set_coord(king.coordH - 2, king.coordV);
+
+        }
+        return true;
+    }
+    return false;
+}
+
+
+Rock* Board::get_rock(int H, std::vector<std::unique_ptr<Piece>>& pieces, Color col){
+    char rock = col ? 'R' : 'r';
+    H = H < 4 ? 0 : 7;
+
+    for (const auto& piece : pieces) {
+        if (piece->name == rock && piece->get_coordH() == H) {
+            Rock* rockPtr = dynamic_cast<Rock*>(piece.get());
+            return rockPtr;
+        }
+    }
+    // cout << "hm" << endl;
+    return nullptr;
 }
 

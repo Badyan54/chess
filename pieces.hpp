@@ -1,6 +1,7 @@
 #ifndef PIECES_HPP
 #define PIECES_HPP
-
+#include <vector>
+#include <memory>
 enum Color { WHITE, BLACK};
 
 struct EnPassantMe{
@@ -23,6 +24,7 @@ public:
 
     int get_coordH();
     int get_coordV();
+    void set_coord(int H, int V);
     virtual bool ishaveMove(char (&position)[8][8]) = 0;
     virtual bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) = 0;
     
@@ -39,7 +41,6 @@ public:
     static bool isEnPasant(int H, int V, int move);
     virtual bool ishaveMove(char (&position)[8][8]) override;
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
-    void promote(const char name);
 
 private:
     // Color col;
@@ -48,7 +49,7 @@ private:
 
 class Rock : public Piece{
 public:
-    bool isFirstMove;
+    bool hasMoved;
     Rock(const int H, const int V, const char name);
     bool ishaveMove(char (&position)[8][8]) override;
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
@@ -74,12 +75,12 @@ public:
 
 class King : public Piece{
 public:
-    bool isFirstMove;
-    bool canCastle;
+    bool hasMoved;
     bool ishaveMove(char (&position)[8][8]) override;
     King(const int H, const int V, const char name);
     bool isPosible(const int coordH, const int coordV, char (&position)[8][8], const int move) override;
-
+    bool isUnderAttack(int H, int V, std::vector<std::unique_ptr<Piece>>& opponentPieces, char (&position)[8][8]);
+    
 };
 
 class Knight : public Piece{

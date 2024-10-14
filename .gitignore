@@ -3,3 +3,4 @@ chess
 include/
 lib/
 output/
+build/
