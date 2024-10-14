@@ -6,22 +6,16 @@
 #include <memory>
 #include <cmath>
 
-
-
-
 using namespace std;
-
 
 Board::Board(){
     copy(&defaultPosition[0][0], &defaultPosition[0][0] + 8 * 8, &position[0][0]);
-    numverOfMove = 0;
-
+    moveNum = 0;
 }
+
 Board::Board(const char myPosition[8][8]) {
     copy(&myPosition[0][0], &myPosition[0][0] + 8 * 8, &position[0][0]);
-    numverOfMove = 0;
-
-
+    moveNum = 0;
 }
 
 const char Board::defaultPosition[8][8] = {
@@ -116,7 +110,6 @@ bool Board::isCheckMate(Color col) {
     if (isUnderAttack(kingX, kingY, col, position)) return false;
 
     std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
-    
     char testPosition[8][8];
     std::copy(&position[0][0], &position[0][0] + 8 * 8, &testPosition[0][0]);
 
@@ -129,12 +122,9 @@ bool Board::isCheckMate(Color col) {
             
             int dX = (attackerX - kingX) / std::max(1, std::abs(attackerX - kingX));
             int dY = (attackerY - kingY) / std::max(1, std::abs(attackerY - kingY));
-
-            
             int X = kingX + dX;
             int Y = kingY + dY;
 
-            
             while (X != attackerX || Y != attackerY) {
                 if (isUnderAttack(X, Y, col, position)) {
                     char before = testPosition[Y][X];
@@ -150,18 +140,15 @@ bool Board::isCheckMate(Color col) {
             }
         }
     }
-
-    return king.ishaveMove(position); 
+    return true; 
 }
 
 bool Board::draw(Color col) {
     King& king = col ? (*kingBlack) : (*kingWhite);
-
     std::vector<std::unique_ptr<Piece>>& myPieces = col ? piecesBlack : piecesWhite;
 
-    if (isUnderAttack(king.get_x(), king.get_y(), col, position)) {
-        return false; 
-    }
+    if (isUnderAttack(king.get_x(), king.get_y(), col, position)) return false;
+
     for (auto& piece : myPieces) {
         if (piece->ishaveMove(position)) {
             return false; 
@@ -221,56 +208,47 @@ Stun Board::check_position(Color col){
     return PLAY;
 }
 
-bool Board::set_promote(){
+// bool Board::set_promote(){
     
-    for (auto it = piecesWhite.begin(); it != piecesWhite.end(); ) {
-        if ((*it)->name == 'P' && (*it)->get_y() == 7) {  
-            char newPiece;
-            std::cout << "Promote your pawn! Choose Q (Queen), R (Rook), B (Bishop), or N (Knight): ";
-            std::cin >> newPiece;
+//     for (auto it = piecesWhite.begin(); it != piecesWhite.end(); ) {
+//         if ((*it)->name == 'P' && (*it)->get_y() == 7) {  
+//             char newPiece;
+//             std::cout << "Promote your pawn! Choose Q (Queen), R (Rook), B (Bishop), or N (Knight): ";
+//             std::cin >> newPiece;
 
-            push_back_piece(newPiece, (*it)->get_x(), (*it)->get_y());  
-            it = piecesWhite.erase(it);  
-        } else {
-            ++it;  
-        }
-    }
+//             push_back_piece(newPiece, (*it)->get_x(), (*it)->get_y());  
+//             it = piecesWhite.erase(it);  
+//         } else {
+//             ++it;  
+//         }
+//     }
 
+//     for (auto it = piecesBlack.begin(); it != piecesBlack.end(); ) {
+//         if ((*it)->name == 'p' && (*it)->get_y() == 0) {  
+//             char newPiece;
+//             std::cout << "Promote your pawn! Choose Q (Queen), R (Rook), B (Bishop), or N (Knight): ";
+//             std::cin >> newPiece;
 
-    for (auto it = piecesBlack.begin(); it != piecesBlack.end(); ) {
-        if ((*it)->name == 'p' && (*it)->get_y() == 0) {  
-            char newPiece;
-            std::cout << "Promote your pawn! Choose Q (Queen), R (Rook), B (Bishop), or N (Knight): ";
-            std::cin >> newPiece;
+//             push_back_piece(newPiece, (*it)->get_x(), (*it)->get_y());  
+//             it = piecesBlack.erase(it);  
+//         } else {
+//             ++it; 
+//         }
+//     }
 
-            push_back_piece(newPiece, (*it)->get_x(), (*it)->get_y());  
-            it = piecesBlack.erase(it);  
-        } else {
-            ++it; 
-        }
-    }
-
-    return true;  
-}
+//     return true;  
+// }
 
 bool Board::canCastle(King &king, Rock &rook, Color col) {
-    // Перевіряємо, чи король і тура не рухалися
-    if (king.isHasMoved()|| rook.isHasMoved() ||
-        isUnderAttack(king.get_x(), king.get_y(), col, position)) {
-            cout << "hm";
-            return false;
-        }
+    if (king.isHasMoved()|| rook.isHasMoved() || isUnderAttack(king.get_x(), king.get_y(), col, position)) return false;
+
     int startX = king.get_x() < rook.get_x() ? king.get_x() : rook.get_x();
     int endX = king.get_x() > rook.get_x() ? king.get_x() : rook.get_x();
 
     for (int i = startX + 1; i < endX; ++i) {
-        if (position[king.get_y()][i] != ' '||
-        isUnderAttack( i, king.get_y(), col, position)){
-            cout << king.get_x() << " " << i << endl;
-            return false;
-        }  // Якщо на шляху є фігура
+        if (position[king.get_y()][i] != ' '|| isUnderAttack( i, king.get_y(), col, position)) return false;
+        
     }
-    cout << "Xm";
     return true; 
 }
 
@@ -279,21 +257,18 @@ bool Board::castle(King &king, Rock *rook, Color col) {
 
     if (canCastle(king, (*rook), col)) {
         if ((*rook).get_x() > king.get_x()) {
-            // Рокіровка на праву сторону
             position[king.get_y()][king.get_x() + 1] = (*rook).name;
             position[king.get_y()][king.get_x() + 2] = king.name;
             position[rook->get_y()][rook->get_x()] = position[king.get_y()][king.get_x()] = ' ';
-
             (*rook).set_coord(king.get_x() + 1, king.get_y());
             king.set_coord(king.get_x() + 2, king.get_y());
-        } else { 
 
+        } else { 
             position[king.get_y()][king.get_x() - 1] = (*rook).name;
             position[king.get_y()][king.get_x() - 2] = king.name;
             position[rook->get_y()][rook->get_x()] = position[king.get_y()][king.get_x()] = ' ';
             (*rook).set_coord(king.get_x() - 1, king.get_y());
             king.set_coord(king.get_x() - 2, king.get_y());
-
         }
         return true;
     }
@@ -335,4 +310,10 @@ bool Board::isUnderAttack(int X, int Y, Color col, char (&position)[8][8]) {
         }
     }
     return false;
+}
+
+void Board::endGame(){
+    piecesBlack.clear();         piecesWhite.clear(); 
+    piecesBlack.shrink_to_fit(); piecesWhite.shrink_to_fit();
+    moveNum = 0;
 }

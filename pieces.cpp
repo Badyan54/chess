@@ -350,25 +350,12 @@ bool King::ishaveMove(char (&position)[8][8]) {
 
         if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
             if (position[newY][newX] == ' ' || !hereMyFigure(newX, newY, position)) {
-
-                    return true; 
-
+                return true; 
             }
         }
     }
     return false; 
 }
-
-// bool King::isUnderAttack(int X, int Y, std::vector<std::unique_ptr<Piece>>& opponentPieces, char (&position)[8][8]) {
-//     for (const auto& piece : opponentPieces) {
-        
-//         if (piece->isPosible(X, Y, position, 0)) {
-//             cout << piece->name << "  "<< piece->get_x() << piece->get_y() << endl;
-//             return true;
-//         }
-//     }
-//     return false;
-// }
 
 bool King::isHasMoved(){
     return hasMoved;
