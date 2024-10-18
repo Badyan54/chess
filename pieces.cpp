@@ -1,10 +1,7 @@
 #include "pieces.hpp"
 #include <algorithm>
 #include <string>
-#include <vector>
-#include <utility>
-#include <iostream>
-#include <memory>
+
 using namespace std;
 
 Piece::Piece(const int X, const int Y, const char n){
