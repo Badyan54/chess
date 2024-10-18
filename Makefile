@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++14 -O3
-SOURCES = main.cpp board.cpp pieces.cpp
+SOURCES = main.cpp board.cpp pieces.cpp 
 HEADERS = board.hpp pieces.hpp
 BUILD_DIR = build/
 OBJECTS = $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SOURCES))

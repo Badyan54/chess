@@ -21,7 +21,7 @@ private:
     bool isUnderAttack(int X, int Y, Color col, char** position);
     Rock* get_rock(int X, Color col);
     King& getKing(Color col);
-    bool set_promote();
+    
     bool canCastle(King &king, Rock &rook, Color col);
     bool castle(King &king, Rock *rook, Color col);
     bool kingIsHaveMove(King king);
@@ -34,10 +34,10 @@ public:
 
     void delPos(char** pos);
     char** get_position();
-    void writeCurrentBoard();
+    void writeBoard();
     void startGame();
     bool isCheckMate(Color col);
     bool draw(Color col);
-    bool move(int currentX, int currentY, int newX, int newY, Color col, char newName);
+    bool move(int currentX, int currentY, int newX, int newY, Color col);
     Stun check_position(Color col);
 };

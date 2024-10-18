@@ -51,9 +51,8 @@ char** Board::initPos(char** pos) {
     return newPosition; 
 }
 
-
 const char Board::defaultPosition[8][8] = {
-    {'r', ' ', ' ', 'q', 'k', 'b', ' ', 'r'},
+    {'r', ' ', ' ', 'q', 'k', ' ', ' ', 'r'},
     {'p', 'p', 'P', 'p', 'p', 'p', 'p', 'p'},
     {' ', ' ', 'B', ' ', ' ', ' ', ' ', ' '},
     {' ', ' ', ' ', ' ', ' ', 'P', ' ', ' '},
@@ -63,7 +62,7 @@ const char Board::defaultPosition[8][8] = {
     {'R', ' ', ' ', 'K', ' ', ' ', ' ', 'R'}
 };
 
-void Board::writeCurrentBoard() {
+void Board::writeBoard() {
     cout << "    A B C D E F G H" << std::endl;
     for (int i = 0; i < 8; i++) {
         cout << i + 1 << "   ";
@@ -194,7 +193,7 @@ bool Board::draw(Color col) {
     return true;
 }
 
-bool Board::move(int currentX, int currentY, int newX, int newY, Color col, char newName) {  
+bool Board::move(int currentX, int currentY, int newX, int newY, Color col) {  
     King& king = col ? (*kingBlack) : (*kingWhite); 
     std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
     std::vector<std::unique_ptr<Piece>>& myPieces = col ? piecesBlack : piecesWhite;
@@ -221,10 +220,13 @@ bool Board::move(int currentX, int currentY, int newX, int newY, Color col, char
             if ((*piece)->move(newX, newY, position, 2)) {
                 
                 if (((*piece)->name == 'P' || (*piece)->name == 'p') && (newY == 7 || newY == 0)) {
-                    
+                    char newPiece;
+                    cout << "Promote your pawn! Choose Queen, Rook, Bishop, Knight: ";
+                    cin >> newPiece;
                     piece = myPieces.erase(piece);
-                    push_back_piece(newName, newX, newY);
-                    position[newY][newX] = newName;
+
+                    push_back_piece(newPiece, newX, newY);
+                    position[newY][newX] = newPiece;
                 } 
 
                 for (auto it = opponentPieces.begin(); it != opponentPieces.end(); ) {
@@ -246,37 +248,6 @@ Stun Board::check_position(Color col){
     if (draw(col)) return DRAW;
     return PLAY;
 }
-
-// bool Board::set_promote(){
-    
-//     for (auto it = piecesWhite.begin(); it != piecesWhite.end(); ) {
-//         if ((*it)->name == 'P' && (*it)->get_y() == 7) {  
-//             char newPiece;
-//             std::cout << "Promote your pawn! Choose Q (Queen), R (Rook), B (Bishop), or N (Knight): ";
-//             std::cin >> newPiece;
-
-//             push_back_piece(newPiece, (*it)->get_x(), (*it)->get_y());  
-//             it = piecesWhite.erase(it);  
-//         } else {
-//             ++it;  
-//         }
-//     }
-
-//     for (auto it = piecesBlack.begin(); it != piecesBlack.end(); ) {
-//         if ((*it)->name == 'p' && (*it)->get_y() == 0) {  
-//             char newPiece;
-//             std::cout << "Promote your pawn! Choose Q (Queen), R (Rook), B (Bishop), or N (Knight): ";
-//             std::cin >> newPiece;
-
-//             push_back_piece(newPiece, (*it)->get_x(), (*it)->get_y());  
-//             it = piecesBlack.erase(it);  
-//         } else {
-//             ++it; 
-//         }
-//     }
-
-//     return true;  
-// }
 
 bool Board::canCastle(King &king, Rock &rook, Color col) {
     if (king.isHasMoved()|| rook.isHasMoved() || isUnderAttack(king.get_x(), king.get_y(), col, position)) return false;
@@ -344,7 +315,6 @@ bool Board::isUnderAttack(int X, int Y, Color col, char** position) {
     for (const auto& piece : opponentPieces) {
         
         if (piece->isPosible(X, Y, position, 0)) {
-            cout << piece->name << "  "<< piece->get_x() << piece->get_y() << endl;
             return true;
         }
     }
@@ -376,3 +346,5 @@ bool Board::kingIsHaveMove(King king){
     }
     return false; 
 }
+
+
