@@ -15,18 +15,18 @@ class Piece{
 protected:
     int x;
     int y;
-    bool hereMyFigure(int X, int Y, char (&position)[8][8]);
 public:
+    bool hereMyFigure(int X, int Y, char** position);
     char name;
     Color col;
     Piece(const int X, const int Y, const char n);
-    bool move(const int X, const int Y, char (&position)[8][8], const int move);
+    bool move(const int X, const int Y, char** position, const int move);
     int get_x();
     int get_y();
     void set_coord(int X, int Y);
 
-    virtual bool ishaveMove(char (&position)[8][8]) = 0;
-    virtual bool isPosible(const int x, const int y, char (&position)[8][8], const int move) = 0;
+    virtual bool ishaveMove(char** position) = 0;
+    virtual bool isPosible(const int x, const int y, char** position, const int move) = 0;
     
 };
 
@@ -39,8 +39,8 @@ private:
     static bool isEnPasant(int X, int Y, int move);
 public:
     Pawn(const int x, const int y, const char name);
-    bool ishaveMove(char (&position)[8][8]) override;
-    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
+    bool ishaveMove(char** position) override;
+    bool isPosible(const int x, const int y, char** position, const int move) override;
 };
 
 class Rock : public Piece{
@@ -49,16 +49,16 @@ private:
 public:
     Rock(const int X, const int Y, const char name);
     bool isHasMoved();
-    bool ishaveMove(char (&position)[8][8]) override;
-    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
+    bool ishaveMove(char** position) override;
+    bool isPosible(const int x, const int y, char** position, const int move) override;
 
 };
 
 class Bishop : public Piece{
 public:
     Bishop(const int X, const int Y, const char name);
-    bool ishaveMove(char (&position)[8][8]) override;
-    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
+    bool ishaveMove(char** position) override;
+    bool isPosible(const int x, const int y, char** position, const int move) override;
 };
 
 class Queen : public Piece{
@@ -67,8 +67,8 @@ private:
     Rock rock; 
 public:
     Queen(const int X, const int Y, const char name);
-    bool ishaveMove(char (&position)[8][8]) override;
-    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
+    bool ishaveMove(char** position) override;
+    bool isPosible(const int x, const int y, char** position, const int move) override;
 };
 
 class King : public Piece{
@@ -77,16 +77,16 @@ private:
 public:
     King(const int X, const int Y, const char name);
     bool isHasMoved();
-    bool ishaveMove(char (&position)[8][8]) override;
-    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
-   // bool isUnderAttack(int X, int Y, std::vector<std::unique_ptr<Piece>>& opponentPieces, char (&position)[8][8]);
+    bool ishaveMove(char** position) override;
+    bool isPosible(const int x, const int y, char** position, const int move) override;
+   // bool isUnderAttack(int X, int Y, std::vector<std::unique_ptr<Piece>>& opponentPieces, char** position);
 };
 
 class Knight : public Piece{
 public:
     Knight(const int X, const int Y, const char name);
-    bool ishaveMove(char (&position)[8][8]) override;
-    bool isPosible(const int x, const int y, char (&position)[8][8], const int move) override;
+    bool ishaveMove(char** position) override;
+    bool isPosible(const int x, const int y, char** position, const int move) override;
 };
 
 #endif // PIECES_HPP

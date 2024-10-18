@@ -9,14 +9,48 @@
 using namespace std;
 
 Board::Board(){
-    copy(&defaultPosition[0][0], &defaultPosition[0][0] + 8 * 8, &position[0][0]);
+    position = new char*[8];
+    for (int i = 0; i < 8; ++i) {
+        position[i] = new char[8];
+        for (int j = 0; j < 8; ++j) {
+            position[i][j] = defaultPosition[i][j];
+        }
+    }
+    moveNum = 0;
+}
+Board::~Board(){
+    delPos(position);
+}
+
+void Board::delPos(char** pos){
+    for (int i = 0; i < 8; ++i) {
+        delete[] pos[i];
+    }
+    delete[] pos;
+}
+
+Board::Board(const char (&myPosition)[8][8]) {
+    position = new char*[8];
+    for (int i = 0; i < 8; ++i) {
+        position[i] = new char[8];
+        for (int j = 0; j < 8; ++j) {
+            position[i][j] = myPosition[i][j];
+        }
+    }
     moveNum = 0;
 }
 
-Board::Board(const char myPosition[8][8]) {
-    copy(&myPosition[0][0], &myPosition[0][0] + 8 * 8, &position[0][0]);
-    moveNum = 0;
+char** Board::initPos(char** pos) {
+    char** newPosition = new char*[8]; 
+    for (int i = 0; i < 8; ++i) {
+        newPosition[i] = new char[8]; 
+        for (int j = 0; j < 8; ++j) {
+            newPosition[i][j] = pos[i][j]; 
+        }
+    }
+    return newPosition; 
 }
+
 
 const char Board::defaultPosition[8][8] = {
     {'r', ' ', ' ', 'q', 'k', 'b', ' ', 'r'},
@@ -40,55 +74,59 @@ void Board::writeCurrentBoard() {
     }
 }
 
+char** Board::get_position() {
+    return position;
+}
+
 void Board::push_back_piece(char name, int i, int j){                
     switch(name){
         case 'P': 
-            piecesBlack.push_back(std::make_unique<Pawn>(i, j, 'P'));
+            piecesBlack.push_back(make_unique<Pawn>(i, j, 'P'));
             break;
 
         case 'p':  
-            piecesWhite.push_back(std::make_unique<Pawn>(i, j, 'p'));
+            piecesWhite.push_back(make_unique<Pawn>(i, j, 'p'));
             break;
 
         case 'R':
-            piecesBlack.push_back(std::make_unique<Rock>(i, j, 'R'));
+            piecesBlack.push_back(make_unique<Rock>(i, j, 'R'));
             break;
 
         case 'r':
         
-            piecesWhite.push_back(std::make_unique<Rock>(i, j, 'r'));
+            piecesWhite.push_back(make_unique<Rock>(i, j, 'r'));
             break;
 
         case 'H':
-            piecesBlack.push_back(std::make_unique<Knight>(i, j, 'H'));
+            piecesBlack.push_back(make_unique<Knight>(i, j, 'H'));
             break;
 
         case 'h':
-            piecesWhite.push_back(std::make_unique<Knight>(i, j, 'h'));
+            piecesWhite.push_back(make_unique<Knight>(i, j, 'h'));
             break;
 
         case 'B':
-            piecesBlack.push_back(std::make_unique<Bishop>(i, j, 'B'));
+            piecesBlack.push_back(make_unique<Bishop>(i, j, 'B'));
             break;
             
         case 'b':
-            piecesWhite.push_back(std::make_unique<Bishop>(i, j, 'b'));
+            piecesWhite.push_back(make_unique<Bishop>(i, j, 'b'));
             break;
 
         case 'Q':
-            piecesBlack.push_back(std::make_unique<Queen>(i, j, 'Q'));
+            piecesBlack.push_back(make_unique<Queen>(i, j, 'Q'));
             break;
         
         case 'q':
-            piecesWhite.push_back(std::make_unique<Queen>(i, j, 'q'));
+            piecesWhite.push_back(make_unique<Queen>(i, j, 'q'));
             break;
 
         case 'K':
-            piecesBlack.push_back(std::make_unique<King>(i, j, 'K'));
+            piecesBlack.push_back(make_unique<King>(i, j, 'K'));
             break;
 
         case 'k':
-            piecesWhite.push_back(std::make_unique<King>(i, j, 'k'));
+            piecesWhite.push_back(make_unique<King>(i, j, 'k'));
             break;
     }
 }
@@ -107,16 +145,14 @@ bool Board::isCheckMate(Color col) {
     King& king = col ? (*kingBlack) : (*kingWhite);
     int kingX = king.get_x();
     int kingY = king.get_y();
-    if (isUnderAttack(kingX, kingY, col, position)) return false;
+    if (!(isUnderAttack(kingX, kingY, col, position))) return false;
 
     std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
-    char testPosition[8][8];
-    std::copy(&position[0][0], &position[0][0] + 8 * 8, &testPosition[0][0]);
+    char** testPosition = initPos(position);
 
     for (auto& piece : opponentPieces) {
         int attackerX = piece->get_x();
         int attackerY = piece->get_y();
-
         
         if (piece->isPosible(kingX, kingY, position, 2)) {
             
@@ -130,7 +166,7 @@ bool Board::isCheckMate(Color col) {
                     char before = testPosition[Y][X];
                     testPosition[Y][X] = ' '; 
                     if (isUnderAttack(kingX, kingY, col, testPosition)) {
-                        testPosition[Y][X] = before; 
+                        delPos(testPosition);
                         return false;
                     }
                     testPosition[Y][X] = before;
@@ -140,6 +176,7 @@ bool Board::isCheckMate(Color col) {
             }
         }
     }
+    delPos(testPosition);
     return true; 
 }
 
@@ -150,7 +187,7 @@ bool Board::draw(Color col) {
     if (isUnderAttack(king.get_x(), king.get_y(), col, position)) return false;
 
     for (auto& piece : myPieces) {
-        if (piece->ishaveMove(position)) {
+        if (piece->ishaveMove(position) || kingIsHaveMove(king)) {
             return false; 
         }
     }
@@ -162,12 +199,14 @@ bool Board::move(int currentX, int currentY, int newX, int newY, Color col, char
     std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
     std::vector<std::unique_ptr<Piece>>& myPieces = col ? piecesBlack : piecesWhite;
 
-    char testPosition[8][8];
-    std::copy(&position[0][0], &position[0][0] + 8 * 8, &testPosition[0][0]);
+    char** testPosition = initPos(position);
     testPosition[currentY][currentX] = ' ';
     testPosition[newY][newX] = 'R';
 
-    if (isUnderAttack(king.get_x(), king.get_y(), col, testPosition)) return false;
+    if (isUnderAttack(king.get_x(), king.get_y(), col, testPosition)){
+        delPos(testPosition);
+        return false;
+    }
     
     
     for (auto piece = myPieces.begin(); piece != myPieces.end(); ++piece) {
@@ -300,7 +339,7 @@ King& Board::getKing(Color col) {
     throw std::runtime_error("King not found");
 }
 
-bool Board::isUnderAttack(int X, int Y, Color col, char (&position)[8][8]) {
+bool Board::isUnderAttack(int X, int Y, Color col, char** position) {
      std::vector<std::unique_ptr<Piece>>& opponentPieces = col ? piecesWhite : piecesBlack;
     for (const auto& piece : opponentPieces) {
         
@@ -316,4 +355,24 @@ void Board::endGame(){
     piecesBlack.clear();         piecesWhite.clear(); 
     piecesBlack.shrink_to_fit(); piecesWhite.shrink_to_fit();
     moveNum = 0;
+}
+
+bool Board::kingIsHaveMove(King king){
+    int moves[8][2] = {
+        {1, 0},  {1, 1},  {0, 1},  {-1, 1},
+        {-1, 0}, {-1, -1}, {0, -1}, {1, -1}
+    };
+
+    for (int i = 0; i < 8; ++i) {
+        int newX = king.get_x() + moves[i][0];
+        int newY = king.get_y() + moves[i][1];
+
+        if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+            if ((position[newY][newX] == ' ' || king.hereMyFigure(newX, newY, position))
+                && isUnderAttack(newX, newY, king.col, position)) {
+                return true; 
+            }
+        }
+    }
+    return false; 
 }

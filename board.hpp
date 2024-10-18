@@ -1,6 +1,8 @@
 #include <vector>
 #include "pieces.hpp"
 
+using namespace std;
+
 enum Stun {PLAY, DRAW, WINWHITE, WINBLACK};
 
 class Board{
@@ -10,22 +12,28 @@ private:
     King* kingBlack;
     King* kingWhite;
     const static char defaultPosition[8][8];
-    char position[8][8];
+    char** position;
     int moveNum;
-
+    
+    char** initPos(char** position);
+    char** initPos(char (&pos)[8][8]);
     void push_back_piece(char name, int i, int j);
-    bool isUnderAttack(int X, int Y, Color col, char (&position)[8][8]);
+    bool isUnderAttack(int X, int Y, Color col, char** position);
     Rock* get_rock(int X, Color col);
     King& getKing(Color col);
     bool set_promote();
     bool canCastle(King &king, Rock &rook, Color col);
     bool castle(King &king, Rock *rook, Color col);
+    bool kingIsHaveMove(King king);
     void endGame();
 
 public:
     Board();
-    Board(const char myPosition[8][8]);
-    
+    Board(const char (&myPosition)[8][8]);
+    ~Board();
+
+    void delPos(char** pos);
+    char** get_position();
     void writeCurrentBoard();
     void startGame();
     bool isCheckMate(Color col);
