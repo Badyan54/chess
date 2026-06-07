@@ -94,7 +94,8 @@ class Chess_Board:
         return (status, notation)
 
     def turn(self, move):
-        if self.board[move.from_x][move.from_y].color != self.whose_turn:
+        if self.board[move.from_x][move.from_y] is not None and \
+        self.board[move.from_x][move.from_y].color != self.whose_turn:
             return Status.WRONG_TURN
         self.make_move(move)
         self.whose_turn = "white" if self.whose_turn == "black" else "black"
