@@ -73,3 +73,52 @@ class Bishop(_SlidingPiece):
 class Queen(_SlidingPiece):
     direction = ((0, 1), (1, 0), (0, -1), (-1, 0), 
                 (1, 1), (1, -1), (-1, 1), (-1, -1))
+
+class Pawn(_Piece):
+    en_passant_target = None
+
+    def __init__(self, name, x, y):
+        super().__init__(name, x, y)
+        self.direction = -1 if self.color == "black" else 1
+        self.promotion_pieces = ['Q', 'R', 'B', 'N'] \
+            if self.color == "black" else ['q', 'r', 'b', 'n']
+
+    def get_moves(self, board):
+        moves = []
+        start_row = 6 if self.color == "black" else 1
+        end_row = 0 if self.color == "black" else 7
+        new_x = self.x + self.direction
+        m_type = Move_type.PROMOTION if new_x == end_row else Move_type.NORMAL
+
+        if board[new_x][self.y] is None:
+            if m_type == Move_type.PROMOTION:
+                for piece_name in self.promotion_pieces:
+                    moves.append(Move(self.x, self.y, self.x + self.direction, self.y, m_type, piece_name))
+            else:
+                moves.append(Move(self.x, self.y, self.x + self.direction, self.y, m_type))
+        if start_row == self.x and board[self.x + self.direction * 2][self.y] is None:
+            moves.append(Move(self.x, self.y, self.x + self.direction * 2, self.y, Move_type.NORMAL))
+        
+        return moves + self.get_combat_moves(board)
+
+    def get_combat_moves(self, board):
+        moves = []
+        new_x = self.x + self.direction
+        end_row = 0 if self.color == "black" else 7
+        m_type = Move_type.PROMOTION if new_x == end_row else Move_type.NORMAL
+        y1 = self.y + 1
+        y2 = self.y - 1
+
+        if y1 <= 7 and board[new_x][y1] is not None and not self.is_ally(board[new_x][y1].color):
+            if m_type == Move_type.PROMOTION:
+                for piece_name in self.promotion_pieces:
+                    moves.append(Move(self.x, self.y, new_x, y1, m_type, True, piece_name))
+            else:
+                moves.append(Move(self.x, self.y, new_x, y1, m_type, True))
+        if y2 >= 0 and board[new_x][y2] is not None and not self.is_ally(board[new_x][y2].color):
+            if m_type == Move_type.PROMOTION:
+                for piece_name in self.promotion_pieces:
+                    moves.append(Move(self.x, self.y, new_x, y2, m_type, True, piece_name))
+            else:
+                moves.append(Move(self.x, self.y, new_x, y2, m_type, True))
+        return moves
