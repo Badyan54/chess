@@ -83,6 +83,27 @@ class Chess_Board:
             print()
         print()
     
+    def play_turn(self, move):
+        status = self.turn(move)
+        if status == Status.WRONG_PLAYER_TURN:
+            return (status, None)
+        
+        notation = self.transform_to_notation(move, status)
+        self.set_moves()
+        return (status, notation)
+
+    def turn(self, move):
+        if self.board[move.from_x][move.from_y].color != self.whose_turn:
+            return Status.WRONG_PLAYER_TURN
+        self.make_move(move)
+        self.whose_turn = "white" if self.whose_turn == "black" else "black"
+        self.set_state()
+        self.render()
+        if self.is_stalemate(): return Status.STALEMATE
+        if self.is_check_mate(): return Status.CHECK_MATE
+        if self.is_check(self.board, self.whose_turn): return Status.CHECK
+        return Status.OK
+    
     def set_moves(self):
         moves_table = {}
         reversed_moves = defaultdict(list)
