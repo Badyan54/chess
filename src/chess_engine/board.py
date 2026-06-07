@@ -265,3 +265,39 @@ class Chess_Board:
                 return False
 
         return True
+    
+    def transform_to_notation(self, move, status):
+        if move.type_ == Move_type.CASTLE:
+            return "O-O" if move.to_y == 1 else "O-O-O"
+
+        notation = ""
+        row_symbols = ('h', 'g', 'f', 'e', 'd', 'c', 'b', 'a')
+        piece = self.board[move.to_x][move.to_y]
+
+        if piece.type != "pawn" and not self.reversed_moves[(move.to_x, move.to_y)]:
+            notation += piece.name
+        
+            for i in range(8):
+                if self.board[i][move.from_y] != None\
+                    and self.board[i][move.from_y].name == piece.name:
+                    notation += row_symbols[move.from_x]
+            for i in range(8):
+                if self.board[move.from_x][i] != None\
+                    and self.board[move.from_x][i].name == piece.name:
+                    notation += str(move.from_y + 1)
+        elif move.is_capture:
+            notation += row_symbols[move.from_y]
+
+        if move.is_capture:
+            notation += "x"
+        
+        notation += row_symbols[move.to_y] + str(move.to_x + 1)
+
+        if move.type_ == Move_type.PROMOTION:
+            notation += f" = {move.promotion_piece}"
+        if status == Status.CHECK:
+            notation += '+'
+        elif status == Status.CHECK_MATE:
+            notation += '#'
+        
+        return notation
