@@ -1,4 +1,5 @@
-from collections import namedtuple
+import copy
+from collections import namedtuple, defaultdict
 from enum import Enum, auto
 from .pieces import *
 
