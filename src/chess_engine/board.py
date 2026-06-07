@@ -114,7 +114,31 @@ class Chess_Board:
         return self.moves
     
     def make_move(self, move):
-        pass
+        piece = self.board[move.from_x][move.from_y]
+        state = self.copy_state()
+        self.history.append(state)
+        self.last_move = [move, piece.type, piece.color]
+
+        if move.type_ == Move_type.NORMAL:
+            self.change_position(piece, move)
+        elif move.type_ == Move_type.EN_PASSANT:
+            self.change_position(piece, move)
+            self.board[piece.x - piece.direction][piece.y] = None
+        elif move.type_ == Move_type.PROMOTION:
+            self.change_position(piece, move)
+            new_piece = self.create_piece(move.promotion_piece, move.to_x, move.to_y)
+            self.board[move.to_x][move.to_y] = new_piece
+        elif move.type_ == Move_type.CASTLE:
+            self.change_position(piece, move)
+            rook_y = 0 if move.to_y == 1 else 7
+            direction = 1 if move.to_y == 1 else -1
+            rook = self.board[piece.x][rook_y]
+            self.change_position(rook, Move(rook.x, rook.y, rook.x, piece.y + direction, None))
+
+    def change_position(self, piece, move):
+        self.board[move.to_x][move.to_y] = self.board[move.from_x][move.from_y]
+        self.board[move.from_x][move.from_y] = None
+        piece.set_position(move.to_x, move.to_y)
 
     def undo_move(self):
         pass
