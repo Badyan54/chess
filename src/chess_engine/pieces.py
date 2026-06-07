@@ -151,6 +151,11 @@ class Knight(_Piece):
 class King(_Piece):
     direction = ((0, 1), (1, 0), (0, -1), (-1, 0), 
                 (1, 1), (1, -1), (-1, 1), (-1, -1))
+    
+    def __init__(self, name, x, y):
+        super().__init__(name, x, y)
+        self.can_castling = [False, False]
+
 
     def get_moves(self, board):
         moves = []
