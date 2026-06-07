@@ -168,3 +168,34 @@ class Chess_Board:
                 return False
 
         return True
+    
+    def set_castels(self):
+        king = self.kings[self.whose_turn]
+        left_rook, right_rook = self.board[king.x][0], self.board[king.x][7]
+        if king.has_moved or self.is_check(self.board, self.whose_turn):
+            return
+        
+        long, short = False, False
+        if left_rook is not None and not left_rook.has_moved and self.path_clear(king, left_rook):
+            short = True
+        if right_rook is not None and not right_rook.has_moved and self.path_clear(king, right_rook):
+            long = True
+
+        king.set_castling(short, long)
+
+    def path_clear(self, king, rook):
+        step = 1 if king.y < rook.y else -1
+        y = king.y
+        y += step
+        while y != rook.y and king.x == rook.x:
+            if self.board[king.x][y] is not None:
+                return False
+            y += step
+
+        y = king.y
+        for _ in range(2):
+            y += step
+            if self.is_squer_attacked(self.board, self.whose_turn, king.x, y):
+                return False
+
+        return True

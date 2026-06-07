@@ -131,6 +131,10 @@ class Pawn(_Piece):
 class Knight(_Piece):
     direction = ((2, 1), (2, -1),(-2, 1), (-2, -1),
                     (1, 2), (1, -2),(-1, 2), (-1, -2))
+    
+    def __init__(self, name, x, y):
+        super().__init__(name, x, y)
+        self.can_castling = [False, False]
 
     def get_moves(self, board):
         moves = []
@@ -157,4 +161,15 @@ class King(_Piece):
                 if board[ny][nx] is None or not self.is_ally(board[ny][nx].color):
                     is_capture = True if board[ny][nx] is not None else False
                     moves.append(Move(self.x, self.y, nx, ny, Move_type.NORMAL))
+        
+        if self.can_castling[0]:
+            moves.append(Move(self.x, self.y, self.x, self.y - 2, Move_type.CASTLE))
+
+        if self.can_castling[1]:
+            moves.append(Move(self.x, self.y, self.x, self.y + 2, Move_type.CASTLE))
+
+        return moves
+    
+    def set_castling(self, short, long):
+        self.can_castling = [short, long]
         
