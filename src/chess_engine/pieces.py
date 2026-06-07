@@ -122,3 +122,34 @@ class Pawn(_Piece):
             else:
                 moves.append(Move(self.x, self.y, new_x, y2, m_type, True))
         return moves
+
+class Knight(_Piece):
+    direction = ((2, 1), (2, -1),(-2, 1), (-2, -1),
+                    (1, 2), (1, -2),(-1, 2), (-1, -2))
+
+    def get_moves(self, board):
+        moves = []
+
+        for dx, dy in self.direction:
+            nx, ny = self.x + dx, self.y + dy
+            if 0 <= nx <= 7 and 0 <= ny <= 7:                
+                if board[ny][nx] is None or not self.is_ally(board[ny][nx].color):
+                    is_capture = True if board[ny][nx] is not None else False
+                    moves.append(Move(self.x, self.y, nx, ny, Move_type.NORMAL, is_capture))
+
+        return moves
+
+class King(_Piece):
+    direction = ((0, 1), (1, 0), (0, -1), (-1, 0), 
+                (1, 1), (1, -1), (-1, 1), (-1, -1))
+
+    def get_moves(self, board):
+        moves = []
+
+        for dx, dy in self.direction:
+            nx, ny = self.x + dx, self.y + dy
+            if 0 <= nx <= 7 and 0 <= ny <= 7:
+                if board[ny][nx] is None or not self.is_ally(board[ny][nx].color):
+                    is_capture = True if board[ny][nx] is not None else False
+                    moves.append(Move(self.x, self.y, nx, ny, Move_type.NORMAL))
+        
