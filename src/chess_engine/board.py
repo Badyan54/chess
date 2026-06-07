@@ -144,3 +144,27 @@ class Chess_Board:
                             return True
 
         return False
+    
+    def is_check_mate(self):
+        if not self.is_check(self.board, self.whose_turn):
+            return False
+        
+        king = self.kings[self.whose_turn]
+        squers_available = king.get_moves(self.board)
+        for x, y in squers_available:
+            if not self.is_squer_attacked(self.board, self.whose_turn, x, y):
+                return False
+
+        return True
+
+    def is_stalemate(self):
+        if self.is_check(self.board, self.whose_turn):
+            return False
+            
+        king = self.kings[self.whose_turn]
+        squers_available = king.get_moves(self.board)
+        for x, y in squers_available:
+            if not self.is_squer_attacked(self.board, self.whose_turn, x, y):
+                return False
+
+        return True
