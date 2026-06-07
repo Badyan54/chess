@@ -30,7 +30,7 @@ class Chess_Board:
         self.history = []
         self.whose_turn = "white"
         self.moves = {} # here key is "from"
-        self.reversed_moves = {} # here is key "to"
+        self.reversed_moves = {} # here key is "to"
 
         for row in range(8):
             for col in range(8):
@@ -38,6 +38,8 @@ class Chess_Board:
                 if name is not None:
                     self.board[row][col] = self.create_piece(name, row, col)
         self.find_kings()
+        self.set_state()
+        self.set_moves()
 
     def create_piece(self, name, x, y):
         if name is None:
@@ -116,6 +118,10 @@ class Chess_Board:
 
     def undo_move(self):
         pass
+
+    def set_state(self):
+        self.set_en_passant_target()
+        self.set_castels()
 
     def set_en_passant_target(self):
         Pawn.en_passant_target = None
