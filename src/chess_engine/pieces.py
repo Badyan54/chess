@@ -1,3 +1,5 @@
+from .move import Move, Move_type
+
 class _Piece:
     """Base class for every piece"""
     def __repr__(self):
