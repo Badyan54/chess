@@ -62,3 +62,54 @@ class Chess_Board:
                 for piece in row:
                     if piece is not None and piece.name.upper() == "K":
                         self.kings[piece.color] = piece
+
+    def render(self):
+        print("0", end='  ')
+        for i in range(1, 9):
+            print(str(i), end=' ')
+        print()
+        print()
+        for index, row in enumerate(self.board):
+            print(index + 1, end='  ')
+            for squer in row:
+                if squer is None:
+                    squer = ' '
+                print(f"{squer} ", end='')
+            print()
+        print()
+    
+    def set_moves(self):
+        moves_table = {}
+        reversed_moves = defaultdict(list)
+        for_board = copy.deepcopy(self.board)
+        for row in for_board:
+            for piece in row:
+                if piece is not None:
+                    cords = (piece.x, piece.y)
+                    moves = self.get_valid_piece_moves(piece)
+                    moves_table[cords] = moves
+                    for move in moves:
+                        reversed_moves[(piece.name, move.to_x, move.to_y)].append(move)
+
+        self.moves = moves_table
+        self.reversed_moves = reversed_moves
+
+    def get_valid_piece_moves(self, piece):
+        moves = piece.get_moves(self.board)
+        valid_moves = []
+
+        for move in moves:
+            self.make_move(move)
+            if not self.is_check(self.board, piece.color):
+                valid_moves.append(move)
+            self.undo_move()             
+        return valid_moves
+    
+    def get_moves(self):
+        return self.moves
+    
+    def make_move(self, move):
+        pass
+
+    def undo_move(self):
+        pass
