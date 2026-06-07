@@ -86,7 +86,7 @@ class Chess_Board:
     
     def play_turn(self, move):
         status = self.turn(move)
-        if status == Status.WRONG_PLAYER_TURN:
+        if status == Status.WRONG_TURN:
             return (status, None)
         
         notation = self.transform_to_notation(move, status)
