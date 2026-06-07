@@ -2,14 +2,13 @@ from .board import Chess_Board, Status
 from .move import Move, Move_type
 from .pieces import *
 
-
-
 board = Chess_Board()
 moves = board.get_valid_piece_moves(board.board[1][0])
 board.play_turn(moves[0])
 moves = board.get_valid_piece_moves(board.board[6][5])
 board.play_turn(moves[0])
 moves = board.get_valid_piece_moves(board.board[1][4])
+board.play_turn(moves[0])
 m = Move_type.NORMAL
 moves = board.get_valid_piece_moves(board.board[7][4])
 board.play_turn(moves[2])

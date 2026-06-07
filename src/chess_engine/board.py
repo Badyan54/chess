@@ -10,7 +10,7 @@ class Status(Enum):
     CHECK = auto()
     CHECK_MATE = auto()
     STALEMATE = auto()
-    WRONG_PLAYER_TURN = auto()
+    WRONG_TURN = auto()
 
 default_shame = [
     ['r', 'n', 'b', 'k', 'q', 'b', 'n', 'r'],  #white
@@ -95,7 +95,7 @@ class Chess_Board:
 
     def turn(self, move):
         if self.board[move.from_x][move.from_y].color != self.whose_turn:
-            return Status.WRONG_PLAYER_TURN
+            return Status.WRONG_TURN
         self.make_move(move)
         self.whose_turn = "white" if self.whose_turn == "black" else "black"
         self.set_state()
