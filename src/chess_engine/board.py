@@ -140,8 +140,23 @@ class Chess_Board:
         self.board[move.from_x][move.from_y] = None
         piece.set_position(move.to_x, move.to_y)
 
+    def copy_state(self):
+        return {
+            "board": copy.deepcopy(self.board),
+            "whose_turn": self.whose_turn,
+            "last_move": self.last_move.copy()
+        }
+
     def undo_move(self):
-        pass
+        if not self.history:
+            return
+
+        last_state = self.history.pop()
+        self.board = copy.deepcopy(last_state["board"])
+        self.whose_turn = last_state["whose_turn"]
+        self.last_move = last_state["last_move"]
+
+        self.find_kings()
 
     def set_state(self):
         self.set_en_passant_target()
