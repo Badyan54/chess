@@ -121,6 +121,11 @@ class Pawn(_Piece):
                     moves.append(Move(self.x, self.y, new_x, y2, m_type, True, piece_name))
             else:
                 moves.append(Move(self.x, self.y, new_x, y2, m_type, True))
+        if self.en_passant_target is not None:
+            if self.en_passant_target.x == self.x and abs(self.en_passant_target.y - self.y) == 1 and not\
+                    self.is_ally(self.en_passant_target.color):
+                moves.append(Move(self.x, self.y, self.en_passant_target.x + self.direction, self.en_passant_target.y, Move_type.EN_PASSANT, True))
+        
         return moves
 
 class Knight(_Piece):

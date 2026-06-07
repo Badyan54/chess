@@ -1,5 +1,8 @@
+from collections import namedtuple
 from enum import Enum, auto
 from .pieces import *
+
+En_pass_info = namedtuple("En_pass_info", ["x", "y", "color"])
 
 class Status(Enum):
     OK = auto()
@@ -113,3 +116,13 @@ class Chess_Board:
 
     def undo_move(self):
         pass
+
+    def set_en_passant_target(self):
+        Pawn.en_passant_target = None
+        if self.last_move != {}:
+            if self.last_move[1] == "pawn" and abs(self.last_move[0].from_x - self.last_move[0].to_x) == 2:
+                Pawn.en_passant_target = En_pass_info(
+                    x = self.last_move[0].to_x,
+                    y = self.last_move[0].to_y,
+                    color = self.last_move[2]
+                    )
