@@ -126,3 +126,21 @@ class Chess_Board:
                     y = self.last_move[0].to_y,
                     color = self.last_move[2]
                     )
+    
+    def is_check(self, board, color):
+        king = self.kings[color]
+        return self.is_squer_attacked(board, color, king.x, king.y)
+
+    def is_squer_attacked(self, board, color, x, y):
+        for row in board:
+            for piece in row:
+                if piece is not None:
+                    if color == piece.color:
+                        continue
+                    moves = piece.get_combat_moves(board)
+
+                    for attack_x, attack_y in moves:
+                        if attack_x == x and attack_y == y:
+                            return True
+
+        return False
